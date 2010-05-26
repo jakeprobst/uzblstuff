@@ -1,11 +1,11 @@
-uzbl event manager and tab manager
+uzbl event manager and tab manager and cookie manager
 
 uzblem:
     * my own implementation of the EM cause I dont like having to change mine
         every week for features I dont really care about.
 
 uzbltab/uzbltreetab:
-    * intended to be opened only once, 1 fifo available
+    * uzbltab intended to be opened only once, 1 fifo available
     * example uzbltab bindings:
         @bind   tn   = sh 'echo "new" > /tmp/uzbltab'
         @bind   tp   = sh 'echo "new `xclip -selection clipboard -o`" > /tmp/uzbltab'
@@ -20,14 +20,14 @@ uzbltab/uzbltreetab:
     * example uzbltreetab bindings:
         @bind   tn    = sh 'echo "new" > \@tabfifo'
         @bind   tcn   = sh 'echo "cnew" > \@tabfifo'
-        @bind   tp    = sh 'echo "new `xclip -selection clipboard -o`" > \@tabfifo'
-        @bind   tcp   = sh 'echo "cnew `xclip -selection clipboard -o`" > \@tabfifo'
-        @bind   tx    = sh 'echo "close" > \@tabfifo'
-        @bind   ttx   = sh 'echo "treeclose" > \@tabfifo'
+        @bind   tp    = sh 'echo "new \@NAME `xclip -selection clipboard -o`" > \@tabfifo'
+        @bind   tcp   = sh 'echo "cnew \@NAME `xclip -selection clipboard -o`" > \@tabfifo'
+        @bind   tx    = sh 'echo "close \@NAME" > \@tabfifo'
+        @bind   ttx   = sh 'echo "treeclose \@NAME" > \@tabfifo'
         @bind   .     = sh 'echo "next" > \@tabfifo'
         @bind   ,     = sh 'echo "prev" > \@tabfifo'
-        @bind   tg _  = sh 'echo "new %s" > \@tabfifo'
-        @bind   tcg _ = sh 'echo "cnew %s" > \@tabfifo'
+        @bind   tg _  = sh 'echo "new \@NAME %s" > \@tabfifo'
+        @bind   tcg _ = sh 'echo "cnew \@NAME %s" > \@tabfifo'
         @bind   t _   = sh 'echo "goto %s" > \@tabfifo'
         @bind   tf    = sh 'echo "first" > \@tabfifo'
         @bind   tl    = sh 'echo "last" > \@tabfifo'
@@ -35,7 +35,7 @@ uzbltab/uzbltreetab:
         @bind   tsl   = sh 'echo "showtree" > \@tabfifo'
         @bind   tmv _ = sh 'echo "move %s" > \@tabfifo'
         @bind   ta _  = sh 'echo "attach %s" > \@tabfifo'
-        set new_window      = sh 'echo "cnew \"$8\"" > \@tabfifo'
+        @on_event NEW_WINDOW sh 'echo "cnew \@NAME %s" > \@tabfifo'
     * src/uzbltreetab.py and src/uzbltab.py supplied for use with the default
         uzbl-event-manager
     
@@ -53,6 +53,7 @@ uzbltreetab sessions:
 uzbl-browser:
     * For convenience I have included my uzbl-browser script for others to use
         as a basis for their own (it will NOT work out of the box)
+    * contains required steps for uzbltreetab to work
 
 uzblcookied:
     * people complained that uzbl-cookie-daemon was slow, so I made this.
