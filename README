@@ -1,0 +1,59 @@
+uzbl event manager and tab manager
+
+uzblem:
+    * my own implementation of the EM cause I dont like having to change mine
+        every week for features I dont really care about.
+
+uzbltab/uzbltreetab:
+    * intended to be opened only once, 1 fifo available
+    * example uzbltab bindings:
+        @bind   tn   = sh 'echo "new" > /tmp/uzbltab'
+        @bind   tp   = sh 'echo "new `xclip -selection clipboard -o`" > /tmp/uzbltab'
+        @bind   tx   = sh 'echo "close" > /tmp/uzbltab'
+        @bind   >    = sh 'echo "next" > /tmp/uzbltab'
+        @bind   <    = sh 'echo "prev" > /tmp/uzbltab'
+        @bind   tg _ = sh 'echo "new %s" > /tmp/uzbltab'
+        @bind   t _  = sh 'echo "goto %s" > /tmp/uzbltab'
+        @bind   tf   = sh 'echo "first" > /tmp/uzbltab'
+        @bind   tl   = sh 'echo "last" > /tmp/uzbltab'
+        set new_window      = sh 'echo "new $8" > /tmp/uzbltab'
+    * example uzbltreetab bindings:
+        @bind   tn    = sh 'echo "new" > \@tabfifo'
+        @bind   tcn   = sh 'echo "cnew" > \@tabfifo'
+        @bind   tp    = sh 'echo "new `xclip -selection clipboard -o`" > \@tabfifo'
+        @bind   tcp   = sh 'echo "cnew `xclip -selection clipboard -o`" > \@tabfifo'
+        @bind   tx    = sh 'echo "close" > \@tabfifo'
+        @bind   ttx   = sh 'echo "treeclose" > \@tabfifo'
+        @bind   .     = sh 'echo "next" > \@tabfifo'
+        @bind   ,     = sh 'echo "prev" > \@tabfifo'
+        @bind   tg _  = sh 'echo "new %s" > \@tabfifo'
+        @bind   tcg _ = sh 'echo "cnew %s" > \@tabfifo'
+        @bind   t _   = sh 'echo "goto %s" > \@tabfifo'
+        @bind   tf    = sh 'echo "first" > \@tabfifo'
+        @bind   tl    = sh 'echo "last" > \@tabfifo'
+        @bind   thl   = sh 'echo "hidetree" > \@tabfifo'
+        @bind   tsl   = sh 'echo "showtree" > \@tabfifo'
+        @bind   tmv _ = sh 'echo "move %s" > \@tabfifo'
+        @bind   ta _  = sh 'echo "attach %s" > \@tabfifo'
+        set new_window      = sh 'echo "cnew \"$8\"" > \@tabfifo'
+    * src/uzbltreetab.py and src/uzbltab.py supplied for use with the default
+        uzbl-event-manager
+    
+uzbltreetab sessions:
+    * run it with an argument to name it.
+    * for example, `uzbltreetab main` will make:
+        * /tmp/uzlbtreetab-main fifo
+        * $XDG_CONFIG_HOME/treetabsession-main session file
+        * @tabfifo variable set to path of the fifo (/tmp/uzlbtreetab-main)
+    * if run without an argument, it will keep no session and get a randomly
+        numbered fifo (/tmp/uzbltreetab-########)
+    * I am unlikely to add this to uzbltab since I am lazy and never use it.
+    * see uzbl-browser for init stuff
+
+uzbl-browser:
+    * For convenience I have included my uzbl-browser script for others to use
+        as a basis for their own (it will NOT work out of the box)
+
+uzblcookied:
+    * people complained that uzbl-cookie-daemon was slow, so I made this.
+    * entirely compatible with uzbl-cookie-daemon, no need to change anything

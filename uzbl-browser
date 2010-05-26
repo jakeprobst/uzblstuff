@@ -1,0 +1,47 @@
+#!/bin/sh
+
+PREFIX=/usr/local
+if [ -z "$XDG_DATA_HOME" ]; then
+	export XDG_DATA_HOME=$HOME/.local/share
+fi
+if [ -z "$XDG_CACHE_HOME" ]; then
+	export XDG_CACHE_HOME=$HOME/.cache
+fi
+if [ -z "$XDG_CONFIG_HOME" ]; then
+	export XDG_CONFIG_HOME=$HOME/.config
+fi
+
+#if [ ! -S $XDG_CACHE_HOME/uzbl/cookie_daemon_socket ]; then
+#    $XDG_DATA_HOME/uzbl/scripts/cookie_daemon.py
+#fi
+
+#if [ -z "$(ps ax | grep 4chandaemon.py)" ]; then
+#    $XDG_DATA_HOME/uzbl/scripts/4chandaemon.py &
+#    sleep .1
+#fi
+
+# when run from uzbltreetab:
+# $1: this will be set to "tab" if run from uzbltreetab, so you can have
+#     uzbl-browser handle tab and non-tab instances
+# $2: gtk plug socket number thing
+# $3: name of the uzbl instance
+# $4: path to the uzbltreetab fifo
+# $5: the url to open
+
+
+if [ "$1" = "tab" ]; then
+    EMFIFO="/tmp/uzbl_em_$3"
+    /home/jake/projects/uzbltabem/uzblem $EMFIFO | grep -v PTR_MOVE &
+    uzbl-core -s $2 --connect-socket $EMFIFO -n $3 "$5" 2| grep -v PTR_MOVE &
+    until [ -p /tmp/uzbl_fifo_$3 ]; do
+        sleep .1
+    done
+    echo "set tabfifo = $4" > /tmp/uzbl_fifo_$3
+    echo "event FIFOTAB $4" > /tmp/uzbl_fifo_$3
+else
+    SOCKID="$RANDOM$RANDOM"
+    SOCKPATH="/tmp/uzbl_socket_$SOCKID"
+    /home/jake/projects/uzbltabem/uzblem $SOCKPATH &
+    uzbl-core --connect-socket $SOCKPATH "$1" -pv | grep -v PTR_MOVE
+fi
+

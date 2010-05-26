@@ -1,0 +1,46 @@
+r7: 10/05/25
+    * treetab: if an uzbl instance crashes, it cleans up after itself properly
+    * treetab: it knows what to do when a link has spaces now
+    * uzblem: EXEC_KEY event for what key(s) to use for command executing
+    * uzblcookied: cookie daemon added
+
+r6: 10/03/24
+    * treetab: better selection of active tab after closing one
+    * uzblem: better handling of <,>,&,\
+    * uzblem: space doesnt overwrite letters now
+    * treetab: multisession support (see README)
+    * uzblem: ON_EVENT now works with %s
+    * uzbl-browser: example uzbl-browser added
+    * uzblem: fixed some problems in binds with _ without spacing (like //_)
+    * uzblem: deletes /tmp files on exit
+    * treetab: change instance identification from socket path to pid (Stefan Mark)
+    * treetab: update uzbl-event-manager plugin (Stefan Mark)
+
+r5: 09/12/14
+    * tabtree: scrollbar for tablist
+    * tabtree: `move` and `attach` commands to move tabs around in the tree
+    * uzblem: send link uri update on the proper event
+    * uzblem: _ in binds works better
+    * uzblem: implemented IGNORE_KEY
+    * uzblem: implemented MODKEY_BIND
+    * uzblem: backspace/delete work better
+    * uzblem: editing middle of keycmd works better
+    * include plugins for the default event manager
+    * change to how it runs uzbl-browser (see README)
+
+r4: 09/12/07
+    * tabtree: treeview no longer can take focus
+    * tabtree: much more stable tab deletion
+
+r3: 09/12/06
+    * mod keys messing with keycmd index
+    * new tab browser: uzbltreetab
+    * use uzbl-browser rather than set EM in config (see README)
+    * no more config (it really did not do much)
+
+r2: 09/11/03
+    * use --connect-socket
+    * missing headers
+
+r1: 09/11/03
+    * initial release
