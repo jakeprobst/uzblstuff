@@ -31,7 +31,7 @@ fi
 
 if [ "$1" = "tab" ]; then
     EMFIFO="/tmp/uzbl_em_$3"
-    /home/jake/projects/uzbltabem/uzblem $EMFIFO | grep -v PTR_MOVE &
+    /home/jake/projects/uzblstuff/uzblem $EMFIFO | grep -v PTR_MOVE &
     uzbl-core -s $2 --connect-socket $EMFIFO -n $3 "$5" 2| grep -v PTR_MOVE &
     until [ -p /tmp/uzbl_fifo_$3 ]; do
         sleep .1
@@ -41,7 +41,7 @@ if [ "$1" = "tab" ]; then
 else
     SOCKID="$RANDOM$RANDOM"
     SOCKPATH="/tmp/uzbl_socket_$SOCKID"
-    /home/jake/projects/uzbltabem/uzblem $SOCKPATH &
+    /home/jake/projects/uzblstuff/uzblem $SOCKPATH &
     uzbl-core --connect-socket $SOCKPATH "$1" -pv | grep -v PTR_MOVE
 fi
 

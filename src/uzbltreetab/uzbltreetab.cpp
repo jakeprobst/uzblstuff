@@ -490,11 +490,18 @@ void UzblTreeTab::Command(char* c)
         SaveSession();
     }
     if (!g_strcmp0(cmd[0], "cnew")) {
-        
-        if (cmd[1]) {
-            char* u = g_strjoinv(" ",cmd+1);
-            NewTab(u, currenttab);
-            g_free(u);
+        if (cmd[2]) {
+            int i = 0;
+            for(GList* l = uzblinstances; l != NULL; l = g_list_next(l), i++) {
+                UzblInstance* uzin = (UzblInstance*)l->data;
+                printf("g_strcmp0(%s, %s), %d\n", uzin->GetName(), cmd[1], !g_strcmp0(uzin->GetName(), cmd[1]));
+                if (!g_strcmp0(uzin->GetName(), cmd[1])) {
+                    char* u = g_strjoinv(" ",cmd+2);
+                    NewTab(u, i);
+                    g_free(u);
+                    break;
+                }
+            }
         }
         else 
             NewTab("about:blank", currenttab);
