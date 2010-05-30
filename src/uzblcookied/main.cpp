@@ -1,5 +1,6 @@
 #include "cookiejar.h"
 #include <signal.h>
+#include <sys/stat.h>
 
 void sigtermhandle(int a)
 {
