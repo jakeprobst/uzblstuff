@@ -69,8 +69,25 @@ Cookie::Cookie(char* host, char* data)
             continue;
         }
             
+        int epos = 0;
         char *k, *v;
-        char** item = strsplit(vars[i]+o, '=');
+        for(epos = 0; vars[i][epos] != '='; epos++);
+        k = new char[epos+1];
+        memset(k, 0, epos+1);
+        strncpy(k, vars[i]+o, epos-o);
+        if (strlen(vars[i])-1 == epos) {
+            v = new char[2];
+            v[0] = '\0';
+        }
+        else {
+            v = new char[strlen(vars[i])-epos+1];
+            memset(v, 0, strlen(vars[i])-epos+1);
+            strncpy(v, vars[i]+epos+1, strlen(vars[i])-epos+o);
+        }
+        
+        //printf("k, v: [%s, %s]\n", k, v);
+        
+        /*char** item = strsplit(vars[i]+o, '=');
         if (item[2] != NULL) {
             k = strdup(item[0]);
             v = strjoin("=", item+1);
@@ -84,7 +101,7 @@ Cookie::Cookie(char* host, char* data)
             k = strdup(item[0]);
             v = strdup(item[1]);
         }
-        strdelv(item);
+        strdelv(item);*/
         
         /*if (item[0]  == NULL || item[1] == NULL)
             continue;*/

@@ -114,7 +114,6 @@ UzblTreeTab::UzblTreeTab(char* name)
     notebook = GTK_NOTEBOOK(gtk_notebook_new());
     gtk_notebook_set_show_tabs(notebook, false);
     gtk_notebook_set_show_border(notebook, false);
-    gtk_widget_set_can_focus(GTK_WIDGET(notebook), false);
 
     pane = GTK_PANED(gtk_hpaned_new());
     gtk_paned_add1(pane, GTK_WIDGET(tabscroll));
@@ -374,6 +373,11 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
             nuz = ((UzblInstance*)g_list_nth(uzblinstances, currenttab-1)->data);*/
     }
     
+    if (nuz)
+        GotoTab(nuz->GetNum());
+    else
+        GotoTab(gtk_notebook_get_current_page(notebook));
+    
     if (closeall) {
         GList* todelete = NULL;
         for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
@@ -417,11 +421,6 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
     RebuildTree();
     UpdateTablist();
     
-    if (nuz)
-        GotoTab(nuz->GetNum());
-    else
-        GotoTab(gtk_notebook_get_current_page(notebook));
-    
     /*if (!nuz) {
         nuz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
     }
@@ -464,12 +463,8 @@ void UzblTreeTab::GotoTab(int i)
         CloseTab(uz, false);
         return;
     }
-    else {
-        gtk_notebook_set_current_page(notebook, page);
-        gtk_widget_grab_focus(GTK_WIDGET(notebook));
-        gtk_widget_grab_focus(GTK_WIDGET(uz->GetSocket()));
-    }
     
+    gtk_notebook_set_current_page(notebook, page);
     GtkTreeSelection* sel = gtk_tree_view_get_selection(tabtree);
     gtk_tree_selection_select_iter(sel, &iter);
 }
@@ -494,7 +489,6 @@ void UzblTreeTab::Command(char* c)
             int i = 0;
             for(GList* l = uzblinstances; l != NULL; l = g_list_next(l), i++) {
                 UzblInstance* uzin = (UzblInstance*)l->data;
-                printf("g_strcmp0(%s, %s), %d\n", uzin->GetName(), cmd[1], !g_strcmp0(uzin->GetName(), cmd[1]));
                 if (!g_strcmp0(uzin->GetName(), cmd[1])) {
                     char* u = g_strjoinv(" ",cmd+2);
                     NewTab(u, i);
@@ -757,8 +751,8 @@ void UzblTreeTab::NewTab(char* url, int child, bool save)
     
     //gtk_notebook_set_current_page(notebook, gtk_notebook_get_current_page(notebook));
     
-    //UzblInstance* tuz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
-    //gtk_widget_grab_focus(GTK_WIDGET(tuz->GetSocket()));
+    UzblInstance* tuz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
+    gtk_widget_grab_focus(GTK_WIDGET(tuz->GetSocket()));
     
     if (save)
         SaveSession();

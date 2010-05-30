@@ -1,7 +1,5 @@
 #include "cookiejar.h"
 #include "util.h"
-//http://www.pixiv.net/search.php?word=%E3%83%95%E3%82%A1%E3%83%B3%E3%82%BF%E3%82%B7+%E3%82%B9%E3%82%BF%E3%83%BC+%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3&s_mode=s_tag
-//http://www.blog.amiami.com/amiblo/2010/05/post-330.html
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
 
@@ -83,6 +81,8 @@ void CookieJar::LoadFile()
 
 void CookieJar::WriteFile()
 {
+    cookies.sort(cookiesort);
+    
     char buf[1024*4];
     memset(buf, 0, 1024*4);
     
@@ -126,15 +126,17 @@ void CookieJar::WriteFile()
     std::list<Cookie*>::iterator iter;
     for(iter = cookies.begin(); iter != cookies.end(); iter++) {
         Cookie* c = *iter;
-        bool ok = false;
-        for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
-            if (domain_match(c->domain, *witer)) {
-                ok = true;
-                break;
+        if (whitelist.size() != 0) {
+            bool ok = false;
+            for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
+                if (domain_match(c->domain, *witer)) {
+                    ok = true;
+                    break;
+                }
             }
+            if (!ok)
+                continue;
         }
-        if (!ok)
-            continue;
         
         if ((c->expires < t && c->expires != 0)) {
             cookies.remove(c);
@@ -209,15 +211,15 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         cookie[strlen(cookie)-2] = '\0';
         send(req->Fd(), cookie, strlen(cookie), 0);
-        
+        if (cookie[0])
+            printf("[%s]\n\n", cookie);
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        printf("PUT %s%s [%s]\n", req->Host(), req->Path(), req->Data());
+        printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
         
         Cookie* c = new Cookie(req->Host(), req->Data());
         if (c->path == NULL)
             c->path = strdup(req->Path());
-        
         
         std::list<Cookie*>::iterator iter;
         int t = time(NULL);
