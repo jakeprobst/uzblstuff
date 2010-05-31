@@ -27,7 +27,7 @@ int main()
     l->l_whence = SEEK_SET;
     
     char pid[16];
-    memset(pidfile, 0, 16);
+    memset(pid, 0, 16);
     sprintf(pid, "%i\n", getpid());
     write(fd, pid, strlen(pid));
     fsync(fd);
@@ -35,8 +35,13 @@ int main()
     if (fcntl(fd, F_SETLK, l) == -1)
         return 1;
     
-    signal(SIGTERM, &sigtermhandle);
-    signal(SIGINT, &sigtermhandle);
+    /* Registeer signal handler */
+    struct sigaction sigact;
+    sigact.sa_handler=&sigtermhandle;
+    sigemptyset (&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    if (sigaction(SIGINT, &sigact, NULL)) perror("sigaction");
+    if (sigaction(SIGTERM, &sigact, NULL)) perror("sigaction");
     
     CookieJar* cookiejar = new CookieJar();
     
@@ -48,7 +53,7 @@ int main()
     }
     delete cookiejar;
     close(fd);
-    unlink(pidfile);
+    if (unlink(pidfile)) perror ("unlink");
     
     return 1;
 }
