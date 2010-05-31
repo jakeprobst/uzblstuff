@@ -22,7 +22,7 @@ int main()
     signal(SIGTERM, &sigtermhandle);
     signal(SIGINT, &sigtermhandle);
     
-    CookieJar* cookiejar = new CookieJar;
+    CookieJar* cookiejar = new CookieJar();
     
     try {
         cookiejar->Run();
