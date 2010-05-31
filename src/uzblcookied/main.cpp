@@ -1,3 +1,4 @@
+#include "conf.h"
 #include "cookiejar.h"
 #include <signal.h>
 #include <sys/stat.h>
@@ -5,14 +6,26 @@
 #include <unistd.h>
 #include <cstring>
 
+void help() {
+    printf("Usage: uzblcookied [-v] [-m]\n"
+            "    -v - be verbose (use multiple times to increase verbosity level)\n"
+            "    -m - operate in memory (write cookies only on exit)\n");
+}
+
 void sigtermhandle(int a)
 {
     throw 12; // random number, throw something
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    
+    Conf cnf(argc, argv);
+
+    if (cnf.help) {
+        help();
+        exit(0);
+    }
+
     /* Create pidfile and use it as lock */
     xdgHandle xdg;
     xdgInitHandle(&xdg);
@@ -43,7 +56,7 @@ int main()
     if (sigaction(SIGINT, &sigact, NULL)) perror("sigaction");
     if (sigaction(SIGTERM, &sigact, NULL)) perror("sigaction");
     
-    CookieJar* cookiejar = new CookieJar();
+    CookieJar* cookiejar = new CookieJar(&cnf);
     
     try {
         cookiejar->Run();

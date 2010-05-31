@@ -13,8 +13,9 @@ bool domain_match(char* a, char* b)
 }
 
 
-CookieJar::CookieJar()
+CookieJar::CookieJar(Conf *c)
 {
+    cnf = c;
     if (!xdgInitHandle(&xdg)) throw "Unable to initialize XDG handle.";
 
     cookiefd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
@@ -189,7 +190,7 @@ void CookieJar::HandleCookie(CookieRequest* req)
     if (!strcmp(req->Cmd(), "GET")) {
         char cookie[1024*4];
         memset(cookie, 0, 1024*4);
-        printf("GET %s%s\n", req->Host(), req->Path());
+        if (cnf->verbosity) printf("GET %s%s\n", req->Host(), req->Path());
         char domain[1024];
         sprintf(domain, ".%s", req->Host());
         
@@ -214,11 +215,12 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         cookie[strlen(cookie)-2] = '\0';
         send(req->Fd(), cookie, strlen(cookie), 0);
-        if (cookie[0])
+        if (cookie[0] && cnf->verbosity)
             printf("[%s]\n\n", cookie);
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
+        if (cnf->verbosity)
+            printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
         
         Cookie* c = new Cookie(req->Host(), req->Data());
         if (c->path == NULL)
@@ -286,14 +288,16 @@ void CookieJar::Run()
         timeout.tv_sec = 0;
         timeout.tv_usec = 800; // arbitrary
         select(cookiefd+1, &readfd, NULL, NULL, &timeout);
-                
-        if (!FD_ISSET(cookiefd, &readfd) || writetimer > 100) { // arbitrary
-            if (needwrite) {
-                needwrite = false;
-                writetimer = 0;
-                WriteFile();
+        
+        if (!cnf->memory_mode) {
+            if (!FD_ISSET(cookiefd, &readfd) || writetimer > 100) { // arbitrary
+                if (needwrite) {
+                    needwrite = false;
+                    writetimer = 0;
+                    WriteFile();
+                }
+                continue;
             }
-            continue;
         }
         
         sockaddr_un addr;
