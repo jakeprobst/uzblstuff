@@ -13,12 +13,15 @@
 #include <sys/select.h>
 #include <list>
 #include <pthread.h>
+#include <basedir.h>
 
 #include "cookierequest.h"
 #include "cookie.h"
 
 class CookieJar {
     private:
+        xdgHandle xdg;
+    
         int cookiefd;
     
         fd_set readfd;

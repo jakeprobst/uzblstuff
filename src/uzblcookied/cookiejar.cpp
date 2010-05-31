@@ -15,12 +15,14 @@ bool domain_match(char* a, char* b)
 
 CookieJar::CookieJar()
 {
+    if (!xdgInitHandle(&xdg)) throw "Unable to initialize XDG handle.";
+
     cookiefd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
     //printf("socket: %s\n", strerror(errno));
 
     sockaddr_un addr;
     addr.sun_family = AF_UNIX;
-    sprintf(addr.sun_path, "%s/%s", getenv("XDG_CACHE_HOME"), SOCKETFILE);
+    sprintf(addr.sun_path, "%s/%s", xdgCacheHome(&xdg), SOCKETFILE);
     
     unlink(addr.sun_path);
     //printf("path: %s\n", addr.sun_path);
@@ -36,6 +38,7 @@ CookieJar::CookieJar()
 
 CookieJar::~CookieJar()
 {
+    xdgWipeHandle(&xdg);
     close(cookiefd);
 }
 
@@ -43,7 +46,7 @@ void CookieJar::LoadFile()
 {
     char buf[1024*4];
     memset(buf, 0, 1024*4);
-    sprintf(buf, "%s/uzbl/cookies.txt", getenv("XDG_DATA_HOME"));
+    sprintf(buf, "%s/uzbl/cookies.txt", xdgDataHome(&xdg));
     
     FILE* f = fopen(buf, "r");
     if (f == NULL)
@@ -88,7 +91,7 @@ void CookieJar::WriteFile()
     
     std::list<char*>::iterator witer;
     std::list<char*> whitelist;
-    sprintf(buf, "%s/uzbl/cookie_whitelist", getenv("XDG_DATA_HOME"));
+    sprintf(buf, "%s/uzbl/cookie_whitelist", xdgDataHome(&xdg));
     FILE* f = fopen(buf, "r");
     if (f != NULL) {
         memset(buf, 0, 1024*4);
@@ -110,7 +113,7 @@ void CookieJar::WriteFile()
     }
     
     memset(buf, 0, 1024*4);
-    sprintf(buf, "%s/uzbl/cookies.txt", getenv("XDG_DATA_HOME"));
+    sprintf(buf, "%s/uzbl/cookies.txt", xdgDataHome(&xdg));
     f = fopen(buf, "w");
     
     // as a note, that link isn`t actually valid anymore.

@@ -31,10 +31,11 @@ uzbltreetab: $(TREEOBJ)
 
 COOKIESRC = $(wildcard src/uzblcookied/*.cpp)
 COOKIEOBJ = $(COOKIESRC:.cpp=.o)
+COOKIELDFLAGS = `pkg-config --libs libxdg-basedir`
 $(COOKIEOBJ): $(wildcard $(dir)/*.h)
 
 uzblcookied: $(COOKIEOBJ)
-	$(CXX) -o $@ $(COOKIEOBJ)
+	$(CXX) -o $@ $(COOKIEOBJ) $(COOKIELDFLAGS)
 
 clean:
 	rm -f src/*/*.o uzbltab uzblem uzbltreetab uzblcookied
