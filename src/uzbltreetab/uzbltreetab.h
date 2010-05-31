@@ -32,7 +32,7 @@ class UzblTreeTab {
         
         void RebuildTree();
         
-        void NewTab(char*, int child = -1, bool save = true);
+        void NewTab(const char*, int child = -1, bool save = true);
         //void NewTab2(char*, char*);
         void SaveSession();
         void LoadSession();

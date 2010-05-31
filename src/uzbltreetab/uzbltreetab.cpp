@@ -319,15 +319,7 @@ void recursedelete(GList* list, UzblInstance* uz)
 void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
 {
     closing = true;
-    //UzblInstance* uz = ((UzblInstance*)g_list_nth(uzblinstances, currenttab)->data);
     
-    /*for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
-        UzblInstance* iuz = ((UzblInstance*)l->data);
-        if (iuz->GetParent() == NULL)
-            recurseprint(iuz, 0);
-    }*/
-    
-    //printf("1: %d:%d\n", currenttab, g_list_length(uzblinstances));
     
     UzblInstance* nuz = NULL;
     UzblInstance* puz = uz->GetParent();
@@ -366,17 +358,7 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
                 }
             }
         }
-        /*printf("%d:%d\n", g_list_length(uzblinstances), currenttab);
-        if (g_list_length(uzblinstances) > currenttab)
-            nuz = ((UzblInstance*)g_list_nth(uzblinstances, currenttab+1)->data);
-        else
-            nuz = ((UzblInstance*)g_list_nth(uzblinstances, currenttab-1)->data);*/
     }
-    
-    if (nuz)
-        GotoTab(nuz->GetNum());
-    else
-        GotoTab(gtk_notebook_get_current_page(notebook));
     
     if (closeall) {
         GList* todelete = NULL;
@@ -401,7 +383,6 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
         g_list_free(todelete);
     }
     else {
-        //printf("2.2: %d:%d\n", currenttab, g_list_length(uzblinstances));
         UzblInstance* puz = uz->GetParent();
         GList* children = uz->GetChildren();
         for(GList* l = children; l != NULL; l = g_list_next(l)) {
@@ -409,37 +390,19 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
 
             cuz->SetParent(puz);
         }
-        //printf("2.3: %d:%d\n", currenttab, g_list_length(uzblinstances));
-        
         uzblinstances = g_list_remove(uzblinstances, uz);
         delete uz;
-        //printf("2.4: %d:%d\n", currenttab, g_list_length(uzblinstances));
     }
-    
-    //printf("3: %d:%d\n", currenttab, g_list_length(uzblinstances));
     
     RebuildTree();
     UpdateTablist();
     
-    /*if (!nuz) {
-        nuz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
-    }
-    GotoTab(nuz->GetNum());*/
-    
-    
-    //printf("4: %d:%d\n", currenttab, g_list_length(uzblinstances));
-    
+    if (nuz)
+        GotoTab(nuz->GetNum());
+    else
+        GotoTab(gtk_notebook_get_current_page(notebook));
     SaveSession();
     closing = false;
-    //printf("5: %d:%d\n", currenttab, g_list_length(uzblinstances));
-    
-    /*for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
-        UzblInstance* iuz = ((UzblInstance*)l->data);
-        if (iuz->GetParent() == NULL)
-            recurseprint(iuz, 0);
-    }*/
-    
-    //GotoTab(nuz->GetNum());
 }
 
 
@@ -489,6 +452,7 @@ void UzblTreeTab::Command(char* c)
             int i = 0;
             for(GList* l = uzblinstances; l != NULL; l = g_list_next(l), i++) {
                 UzblInstance* uzin = (UzblInstance*)l->data;
+                printf("g_strcmp0(%s, %s), %d\n", uzin->GetName(), cmd[1], !g_strcmp0(uzin->GetName(), cmd[1]));
                 if (!g_strcmp0(uzin->GetName(), cmd[1])) {
                     char* u = g_strjoinv(" ",cmd+2);
                     NewTab(u, i);
@@ -688,7 +652,7 @@ void UzblTreeTab::CheckFIFO()
     }
 }
 
-void UzblTreeTab::NewTab(char* url, int child, bool save)
+void UzblTreeTab::NewTab(const char* url, int child, bool save)
 {
     /*char sockid[128];
     sprintf(sockid, "%d_%d", getpid(), fifocount++);*/

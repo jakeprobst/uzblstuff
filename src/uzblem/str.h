@@ -5,14 +5,14 @@
 
 
 
-char** strsplit(char*, char);
-char* strjoin(char*, char**);
-char* strreplace(char*, char*, char*, int);
-char* strdup(char*);
+char** strsplit(const char*, const char);
+char* strjoin(const char*, char**);
+char* strreplace(const char*, const char*, const char*, int);
+//char* strdup(const char*);
 
-bool strcontains(char*, char*);
+bool strcontains(const char*, const char*);
 
-int charat(char*, char);
+int charat(const char*, char);
 
 void strdelv(char**);
 

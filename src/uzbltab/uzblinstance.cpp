@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-UzblInstance::UzblInstance(char* u, char* fifo, GtkNotebook* notebook)
+UzblInstance::UzblInstance(const char* u, const char* fifo, GtkNotebook* notebook)
 {
     url = g_strdup(u);
     title = g_strdup("Loading...");
