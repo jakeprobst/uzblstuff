@@ -190,7 +190,7 @@ void CookieJar::HandleCookie(CookieRequest* req)
     if (!strcmp(req->Cmd(), "GET")) {
         char cookie[1024*4];
         memset(cookie, 0, 1024*4);
-        if (cnf->verbosity) printf("GET %s%s\n", req->Host(), req->Path());
+        if (cnf->verbosity >= 2) printf("GET %s%s\n", req->Host(), req->Path());
         char domain[1024];
         sprintf(domain, ".%s", req->Host());
         
@@ -215,11 +215,11 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         cookie[strlen(cookie)-2] = '\0';
         send(req->Fd(), cookie, strlen(cookie), 0);
-        if (cookie[0] && cnf->verbosity)
+        if (cookie[0] && cnf->verbosity >= 2)
             printf("[%s]\n\n", cookie);
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        if (cnf->verbosity)
+        if (cnf->verbosity >= 2)
             printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
         
         Cookie* c = new Cookie(req->Host(), req->Data());
@@ -295,6 +295,7 @@ void CookieJar::Run()
                     needwrite = false;
                     writetimer = 0;
                     WriteFile();
+					if (cnf->verbosity >= 1) printf("Cookies file wrote\n");
                 }
                 continue;
             }
