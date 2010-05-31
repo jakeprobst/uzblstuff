@@ -15,6 +15,7 @@ int main()
     
     flock* l = new flock;
     l->l_type = F_WRLCK;
+    l->l_whence = SEEK_SET;
     
     if (fcntl(fd, F_SETLK, l) == -1)
         return 1;
