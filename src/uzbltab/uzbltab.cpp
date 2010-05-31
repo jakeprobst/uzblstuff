@@ -14,7 +14,7 @@ const char* SELECTED_TAB_TEXT_COLOR = "foreground = \"green\"";
 
 
 
-char* strreplace(char* str, char* replaceme, char* replaceto, int times)
+char* strreplace(char* str, const char* replaceme, const char* replaceto, int times)
 {
     int sofar = 0;
     int occurances = 0;
@@ -222,7 +222,7 @@ void UzblTab::LoadSession()
 
 void UzblTab::UpdateTablist()
 {
-    char* tab_format = "<span %s> [ %d <span %s>%.50s</span> ] </span>";
+    char tab_format[] = "<span %s> [ %d <span %s>%.50s</span> ] </span>";
     
     // safely assuming no one will be able to fill all that
     char str[8*1024];
@@ -401,7 +401,7 @@ void UzblTab::CheckFIFO()
     }
 }
 
-void UzblTab::NewTab(char* url)
+void UzblTab::NewTab(const char* url)
 {
     char sockid[128];
     sprintf(sockid, "%d_%d", getpid(), fifocount++);

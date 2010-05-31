@@ -7,7 +7,7 @@
 
 //int UzblInstance::ID = 0;
 
-UzblInstance::UzblInstance(char* u, char* mainfifo, GtkNotebook* n, GtkTreeRowReference* r)
+UzblInstance::UzblInstance(const char* u, const char* mainfifo, GtkNotebook* n, GtkTreeRowReference* r)
 {
     //id = ID++;
     url = g_strdup(u);

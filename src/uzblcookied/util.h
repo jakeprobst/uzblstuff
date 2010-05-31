@@ -4,23 +4,23 @@
 #include <stdio.h>
 #include <string.h>
 
-char* strdup(char*);
+char* strdup(const char*);
 
-char** nullsplit(char*);
+char** nullsplit(const char*);
 char* strjoin(char**);
-char* strjoin(char*, char**);
+char* strjoin(const char*, char**);
 
-char** strsplit(char*, char);
+char** strsplit(const char*, char);
 
 
-bool strcontains(char*, char*);
+bool strcontains(const char*, const char*);
 void strdelv(char**);
 int strlenv(char**);
 
 
 
-bool startswith(char*, char*);
-bool endswith(char*, char*);
+bool startswith(const char*, const char*);
+bool endswith(const char*, const char*);
 
 
 

@@ -24,7 +24,7 @@ class UzblInstance {
         
         GtkSocket* GetSocket() {return socket;};
 
-        UzblInstance(char*, char*, GtkNotebook*);
+        UzblInstance(const char*, const char*, GtkNotebook*);
         ~UzblInstance();
 };
 

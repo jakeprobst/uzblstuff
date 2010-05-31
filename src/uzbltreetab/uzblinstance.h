@@ -52,7 +52,7 @@ class UzblInstance {
         
         GtkSocket* GetSocket() {return socket;};
 
-        UzblInstance(char*, char*, GtkNotebook*, GtkTreeRowReference*);
+        UzblInstance(const char*, const char*, GtkNotebook*, GtkTreeRowReference*);
         ~UzblInstance();
 };
 

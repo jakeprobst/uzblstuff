@@ -36,7 +36,7 @@ char* strjoin(char** s)
     return out;
 }
 
-char* strjoin(char* d, char** s)
+char* strjoin(const char* d, char** s)
 {
     int len = 0;
     int items = 0;
@@ -61,7 +61,7 @@ char* strjoin(char* d, char** s)
     return out;
 }
 
-char** nullsplit(char* str)
+char** nullsplit(const char* str)
 {
     int items = 1;
     for(int i = 0;;i++) {
@@ -108,7 +108,7 @@ char** nullsplit(char* str)
     return out;
 }
 
-char** strsplit(char* str, char delim)
+char** strsplit(const char* str, char delim)
 {
     int len = strlen(str);
     char** out;
@@ -164,7 +164,7 @@ char** strsplit(char* str, char delim)
 }
 
 
-bool strcontains(char* h, char* n)
+bool strcontains(const char* h, const char* n)
 {
     int hlen = strlen(h);
     int nlen = strlen(n);
@@ -194,14 +194,14 @@ int strlenv(char** s)
 }
 
 
-bool startswith(char* h, char* n)
+bool startswith(const char* h, const char* n)
 {
     if (!strncmp(h, n, strlen(n)))
         return true;
     return false;
 }
 
-bool endswith(char* h, char* n)
+bool endswith(const char* h, const char* n)
 {
     int ho = strlen(h) - strlen(n);
     if (!strncmp(h+ho, n, strlen(n)))

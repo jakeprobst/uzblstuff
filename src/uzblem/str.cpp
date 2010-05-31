@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-char** strsplit(char* str, char delim)
+char** strsplit(const char* str, char delim)
 {
     int len = strlen(str);
     char** out;
@@ -66,7 +66,7 @@ void strdelv(char** s)
     delete[] s;
 }
 
-char* strjoin(char* d, char** s)
+char* strjoin(const char* d, char** s)
 {
     int len = 0;
     int items = 0;
@@ -91,7 +91,7 @@ char* strjoin(char* d, char** s)
     return out;
 }
 
-char* strreplace(char* str, char* replaceme, char* replaceto, int times)
+char* strreplace(const char* str, const char* replaceme, const char* replaceto, int times)
 {
     int sofar = 0;
     int occurances = 0;
@@ -128,17 +128,17 @@ char* strreplace(char* str, char* replaceme, char* replaceto, int times)
     return out;
 }
 
-char* strdup(char* s)
+/*char* strdup(const char* s)
 {
     char* out = new char[strlen(s)+1];
     memset(out, 0, strlen(s)+1);
     strncpy(out, s, strlen(s));
     return out;
-}
+}*/
 
 
 
-bool strcontains(char* h, char* n)
+bool strcontains(const char* h, const char* n)
 {
     int hlen = strlen(h);
     int nlen = strlen(n);
@@ -152,7 +152,7 @@ bool strcontains(char* h, char* n)
     return false;
 }
 
-int charat(char* str, char c)
+int charat(const char* str, char c)
 {
     int l = strlen(str);
     for(int i = 0; i < l; ++i) {

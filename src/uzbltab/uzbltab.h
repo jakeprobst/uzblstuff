@@ -21,7 +21,7 @@ class UzblTab {
         int fb;
         char fifobuf[1024];
         
-        void NewTab(char*);
+        void NewTab(const char*);
         void SaveSession();
         void LoadSession();
         

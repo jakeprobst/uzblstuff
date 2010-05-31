@@ -652,7 +652,7 @@ void UzblTreeTab::CheckFIFO()
     }
 }
 
-void UzblTreeTab::NewTab(char* url, int child, bool save)
+void UzblTreeTab::NewTab(const char* url, int child, bool save)
 {
     /*char sockid[128];
     sprintf(sockid, "%d_%d", getpid(), fifocount++);*/
