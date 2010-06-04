@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     if (fcntl(fd, F_SETLK, l) == -1)
         return 1;
     
-    /* Registeer signal handler */
+    /* Register signal handler */
     struct sigaction sigact;
     sigact.sa_handler=&sigtermhandle;
     sigemptyset (&sigact.sa_mask);
