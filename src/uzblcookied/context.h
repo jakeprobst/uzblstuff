@@ -5,6 +5,7 @@ class Context {
     public:
         Context(int, char **);
         int verbosity;
+        bool daemonize;
         bool memory_mode;
         bool help;
 };

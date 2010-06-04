@@ -28,6 +28,23 @@ int main(int argc, char **argv)
         exit(0);
     }
 
+    /* Daemonize */
+    if (ctx->daemonize) {
+        switch (fork()) {
+            case 0:
+                /* we are the daemon process (Har! Har!) */
+                close(0);
+                close(1);
+                close(2);
+                break;
+            case -1:
+                perror("fork");
+                exit(1);
+            default:
+                exit(0);
+        }
+    }
+
     /* Create pidfile and use it as lock */
     xdgHandle xdg;
     xdgInitHandle(&xdg);
