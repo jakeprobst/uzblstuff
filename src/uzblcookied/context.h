@@ -1,9 +1,9 @@
-#ifndef _CONF_H_
-#define _CONF_H_
+#ifndef _CONTEXT_H_
+#define _CONTEXT_H_
 
-class Conf {
+class Context {
     public:
-        Conf(int, char **);
+        Context(int, char **);
         int verbosity;
         bool memory_mode;
         bool help;

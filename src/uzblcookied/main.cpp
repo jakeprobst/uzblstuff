@@ -1,5 +1,5 @@
-#include "conf.h"
 #include "cookiejar.h"
+#include "context.h"
 #include <signal.h>
 #include <sys/stat.h>
 #include <basedir.h>
@@ -17,11 +17,13 @@ void sigtermhandle(int a)
     throw 12; // random number, throw something
 }
 
+Context *ctx;
+
 int main(int argc, char **argv)
 {
-    Conf cnf(argc, argv);
+    ctx = new Context(argc, argv);
 
-    if (cnf.help) {
+    if (ctx->help) {
         help();
         exit(0);
     }
@@ -56,7 +58,7 @@ int main(int argc, char **argv)
     if (sigaction(SIGINT, &sigact, NULL)) perror("sigaction");
     if (sigaction(SIGTERM, &sigact, NULL)) perror("sigaction");
     
-    CookieJar* cookiejar = new CookieJar(&cnf);
+    CookieJar* cookiejar = new CookieJar();
     
     try {
         cookiejar->Run();

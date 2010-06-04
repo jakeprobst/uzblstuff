@@ -17,11 +17,10 @@
 
 #include "cookierequest.h"
 #include "cookie.h"
-#include "conf.h"
+#include "context.h"
 
 class CookieJar {
     private:
-        Conf *cnf;
         xdgHandle xdg;
     
         int cookiefd;
@@ -38,7 +37,7 @@ class CookieJar {
         void LoadFile();
     
     public:
-        CookieJar(Conf *);
+        CookieJar();
         ~CookieJar();
     
         void WriteFile();

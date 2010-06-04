@@ -1,10 +1,11 @@
 #include <unistd.h>
-#include "conf.h"
+#include "context.h"
 
-Conf::Conf(int argc, char **argv) {
+Context::Context(int argc, char **argv) {
     verbosity = 0;
     memory_mode = false;
     help = false;
+	daemonize = true;
 
     int index;
     int c;
