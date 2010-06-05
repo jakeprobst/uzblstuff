@@ -21,14 +21,12 @@ UzblInstance::UzblInstance(const char* u, const char* mainfifo, GtkNotebook* n, 
     children = NULL;
     
     socket = GTK_SOCKET(gtk_socket_new());
-    gtk_widget_set_can_focus(GTK_WIDGET(socket), false);
+    //gtk_widget_set_can_focus(GTK_WIDGET(socket), false);
     gtk_notebook_append_page(notebook, GTK_WIDGET(socket), NULL);
-    gtk_widget_show_all(GTK_WIDGET(notebook));
+    //gtk_widget_show_all(GTK_WIDGET(notebook));
+    gtk_widget_show(GTK_WIDGET(socket));
 
-    int rn;
-    FILE* f = fopen("/dev/urandom", "rb");
-    fread(&rn, sizeof(int), 1, f);
-    fclose(f);
+    int rn = rand();
     sprintf(name, "%d", rn &0x7FFFFFFF);
 
     char cmd[1024];

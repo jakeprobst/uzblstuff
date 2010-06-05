@@ -24,37 +24,6 @@ void cell_edited_callback(GtkCellRendererText *cell, gchar *path,
     
     gtk_tree_store_set(ut->GetTreeStore(), &iter, 0, text, -1);
 }
-void cell_columns_changed(GtkTreeView* tree, gpointer data)
-{
-    //GtkTreeModel* model = gtk_tree_view_get_model(tree);
-    //int n
-    
-    for(int i = 0; i < 10; i++)
-        printf("===============================\n");
-    UzblTreeTab* ut = (UzblTreeTab*)data;
-    
-    //ut->RowClicked();
-    //ut->GotoTab(ut->currenttab);
-}
-
-/*void socket_destroyed(GtkSocket *socket, gpointer data)
-{
-    UzblTreeTab* ut = (UzblTreeTab*)data;
-    if (ut->closing)
-        return;
-    
-    int ct = ut->currenttab;    
-    
-    for(GList* l = ut->uzblinstances; l != NULL; l = g_list_next(l)) {
-        UzblInstance* uz = (UzblInstance*)l->data;
-        if (socket == uz->GetSocket()) {
-            ut->GotoTab(uz->GetNum());
-            ut->CloseTab(false);
-            ut->GotoTab(ct);
-        }
-    }
-}*/
-
 
 void wdestroy(GtkWindow* window, UzblTreeTab* ut) {
     ut->Quit();
@@ -109,7 +78,6 @@ UzblTreeTab::UzblTreeTab(char* name)
     gtk_tree_view_set_headers_visible(tabtree, false);
     //g_signal_connect(trenderer, "edited", G_CALLBACK(cell_edited_callback), this);
     g_signal_connect(tabtree, "cursor-changed", G_CALLBACK(row_clicked), this);
-    g_signal_connect(tabtree, "columns-changed", G_CALLBACK(cell_columns_changed), this);
     
     notebook = GTK_NOTEBOOK(gtk_notebook_new());
     gtk_notebook_set_show_tabs(notebook, false);
@@ -191,9 +159,7 @@ void UzblTreeTab::LoadSession()
         sprintf(spath, "%s/uzbl/tabtreesession", getenv("XDG_DATA_HOME"));
     if (access(spath, R_OK|W_OK) == -1)
         return;
- 
-    printf("p: %s\n", spath);
- 
+
     sessionload = true;
     int sessionfd = open(spath, O_RDWR);
     
@@ -210,15 +176,11 @@ void UzblTreeTab::LoadSession()
             sbuf[sb] = '\0';
             
             if (sbuf[0] != '\0') {
-                printf("[%s]\n", sbuf);
-                
                 char url[FIFOSIZE];
                 int child;
                 sscanf(sbuf, "%[^\t]\t%d", url, &child);
-                printf("[%s:%d]\n", url, child);
                 
                 NewTab(url, child, false);
-                sleep(1);
             }
             
             memset(sbuf, 0, FIFOSIZE);
@@ -279,8 +241,6 @@ void UzblTreeTab::RebuildTree()
     
     gtk_tree_view_expand_all(tabtree);
     
-    printf("%d:%d\n", currenttab, g_list_length(uzblinstances));
-    
     GtkTreeIter siter;
     UzblInstance* suz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
     GtkTreeRowReference* sr = suz->GetRowRef();
@@ -327,7 +287,6 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
         if (g_list_length(puz->GetChildren()) > 1) {
             GList* l = g_list_find(puz->GetChildren(), uz);
             int len = g_list_length(puz->GetChildren())-1;
-            printf("%d:%d\n", g_list_position(puz->GetChildren(), l), len);
             if (g_list_position(puz->GetChildren(), l) == len) {
                 nuz = ((UzblInstance*)g_list_nth(puz->GetChildren(), len-1)->data);
             }
@@ -401,6 +360,7 @@ void UzblTreeTab::CloseTab(UzblInstance* uz, bool closeall)
         GotoTab(nuz->GetNum());
     else
         GotoTab(gtk_notebook_get_current_page(notebook));
+    
     SaveSession();
     closing = false;
 }
@@ -452,7 +412,6 @@ void UzblTreeTab::Command(char* c)
             int i = 0;
             for(GList* l = uzblinstances; l != NULL; l = g_list_next(l), i++) {
                 UzblInstance* uzin = (UzblInstance*)l->data;
-                printf("g_strcmp0(%s, %s), %d\n", uzin->GetName(), cmd[1], !g_strcmp0(uzin->GetName(), cmd[1]));
                 if (!g_strcmp0(uzin->GetName(), cmd[1])) {
                     char* u = g_strjoinv(" ",cmd+2);
                     NewTab(u, i);
@@ -469,7 +428,6 @@ void UzblTreeTab::Command(char* c)
         for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
             UzblInstance* uzin = (UzblInstance*)l->data;
             if (!g_strcmp0(uzin->GetName(), cmd[1])) {
-                printf("closing: %s\n", uzin->GetName());
                 CloseTab(uzin, false);
                 break;
             }
@@ -479,7 +437,6 @@ void UzblTreeTab::Command(char* c)
         for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
             UzblInstance* uzin = (UzblInstance*)l->data;
             if (!g_strcmp0(uzin->GetName(), cmd[1])) {
-                printf("treeclosing: %s\n", uzin->GetName());
                 CloseTab(uzin, true);
                 break;
             }
@@ -565,16 +522,6 @@ void UzblTreeTab::Command(char* c)
            }
         }
     }
-    /*if (!g_strcmp0(cmd[0], "tabclose")) { // more like crash
-        for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {
-           if (!strcmp(cmd[1], ((UzblInstance*)l->data)->GetSocketPath())) {
-               printf("s: %s\n", ((UzblInstance*)l->data)->GetURL());
-               GotoTab(((UzblInstance*)l->data)->GetNum());
-               CloseTab(false);
-               SaveSession();
-           }
-        }
-    }*/
     if (!g_strcmp0(cmd[0], "showtree")) {
         gtk_paned_set_position(pane, panepos);
     }
@@ -643,7 +590,6 @@ void UzblTreeTab::CheckFIFO()
         if (fifobuf[fb] == '\n') {
             fifobuf[fb] = '\0';
             Command(fifobuf);
-            printf("fifobuf: [%s]\n", fifobuf);
             memset(fifobuf, 0, FIFOSIZE);
             fb = -1;
         }
@@ -710,13 +656,6 @@ void UzblTreeTab::NewTab(const char* url, int child, bool save)
     uzblinstances = g_list_append(uzblinstances, uzin);
     totaltabs++;
     uzin->SetNum(totaltabs);
-    
-    //g_signal_connect(uzin->GetSocket(), "destroy", G_CALLBACK(socket_destroyed), this);
-    
-    //gtk_notebook_set_current_page(notebook, gtk_notebook_get_current_page(notebook));
-    
-    UzblInstance* tuz = (UzblInstance*)g_list_nth(uzblinstances, currenttab)->data;
-    gtk_widget_grab_focus(GTK_WIDGET(tuz->GetSocket()));
     
     if (save)
         SaveSession();

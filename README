@@ -19,7 +19,7 @@ uzbltab/uzbltreetab:
         set new_window      = sh 'echo "new $8" > /tmp/uzbltab'
     * example uzbltreetab bindings:
         @bind   tn    = sh 'echo "new" > \@tabfifo'
-        @bind   tcn   = sh 'echo "cnew" > \@tabfifo'
+        @bind   tcn   = sh 'echo "cnew \@NAME" > \@tabfifo'
         @bind   tp    = sh 'echo "new `xclip -selection clipboard -o`" > \@tabfifo'
         @bind   tcp   = sh 'echo "cnew \@NAME `xclip -selection clipboard -o`" > \@tabfifo'
         @bind   tx    = sh 'echo "close \@NAME" > \@tabfifo'
