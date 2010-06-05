@@ -1,5 +1,8 @@
+#include "context.h"
 #include "cookiejar.h"
 #include "util.h"
+
+extern Context *ctx;
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
 
@@ -13,9 +16,8 @@ bool domain_match(char* a, char* b)
 }
 
 
-CookieJar::CookieJar(Conf *c)
+CookieJar::CookieJar()
 {
-    cnf = c;
     if (!xdgInitHandle(&xdg)) throw "Unable to initialize XDG handle.";
 
     cookiefd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
@@ -190,7 +192,7 @@ void CookieJar::HandleCookie(CookieRequest* req)
     if (!strcmp(req->Cmd(), "GET")) {
         char cookie[1024*4];
         memset(cookie, 0, 1024*4);
-        if (cnf->verbosity >= 2) printf("GET %s%s\n", req->Host(), req->Path());
+        ctx->log(2, std::string("GET ")+req->Host()+req->Path());
         char domain[1024];
         sprintf(domain, ".%s", req->Host());
         
@@ -215,12 +217,11 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         cookie[strlen(cookie)-2] = '\0';
         send(req->Fd(), cookie, strlen(cookie), 0);
-        if (cookie[0] && cnf->verbosity >= 2)
-            printf("[%s]\n\n", cookie);
+        if (cookie[0])
+            ctx->log(2, std::string("[")+cookie+"]");
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        if (cnf->verbosity >= 2)
-            printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
+        ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
         
         Cookie* c = new Cookie(req->Host(), req->Data());
         if (c->path == NULL)
@@ -289,13 +290,13 @@ void CookieJar::Run()
         timeout.tv_usec = 800; // arbitrary
         select(cookiefd+1, &readfd, NULL, NULL, &timeout);
         
-        if (!cnf->memory_mode) {
+        if (!ctx->memory_mode) {
             if (!FD_ISSET(cookiefd, &readfd) || writetimer > 100) { // arbitrary
                 if (needwrite) {
                     needwrite = false;
                     writetimer = 0;
                     WriteFile();
-					if (cnf->verbosity >= 1) printf("Cookies file wrote\n");
+                    ctx->log(1, std::string("Cookies file wrote"));
                 }
                 continue;
             }
