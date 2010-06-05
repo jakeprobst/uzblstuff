@@ -73,8 +73,8 @@ int main(int argc, char **argv)
     sigact.sa_handler=&sigtermhandle;
     sigemptyset (&sigact.sa_mask);
     sigact.sa_flags = 0;
-    if (sigaction(SIGINT, &sigact, NULL)) perror("sigaction");
-    if (sigaction(SIGTERM, &sigact, NULL)) perror("sigaction");
+    if (sigaction(SIGINT, &sigact, NULL)) ctx->perror("sigaction");
+    if (sigaction(SIGTERM, &sigact, NULL)) ctx->perror("sigaction");
     
     CookieJar* cookiejar = new CookieJar();
     
@@ -83,10 +83,11 @@ int main(int argc, char **argv)
     }
     catch (int e) {
         cookiejar->WriteFile();
+        ctx->log(1, "Cookies file wrote.");
     }
     delete cookiejar;
     close(fd);
-    if (unlink(pidfile)) perror ("unlink");
+    if (unlink(pidfile)) ctx->perror("unlink");
     
     return 1;
 }

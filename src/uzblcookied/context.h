@@ -12,9 +12,10 @@ class Context {
         bool memory_mode;
         bool help;
         void log(int, std::string);
+        void perror(const char *);
 
     protected:
-		std::ostream *out;
+        std::ostream *out;
 };
 
 #endif
