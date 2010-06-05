@@ -1,8 +1,7 @@
-#include "context.h"
 #include "cookiejar.h"
 #include "util.h"
 
-extern Context *ctx;
+//extern Context *ctx;
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
 
@@ -16,9 +15,11 @@ bool domain_match(char* a, char* b)
 }
 
 
-CookieJar::CookieJar()
+CookieJar::CookieJar(Context* c)
 {
     if (!xdgInitHandle(&xdg)) throw "Unable to initialize XDG handle.";
+
+    ctx = c;
 
     cookiefd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
     //printf("socket: %s\n", strerror(errno));

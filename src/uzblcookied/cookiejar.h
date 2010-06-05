@@ -15,12 +15,15 @@
 #include <pthread.h>
 #include <basedir.h>
 
+#include "context.h"
 #include "cookierequest.h"
 #include "cookie.h"
 
 class CookieJar {
     private:
         xdgHandle xdg;
+        
+        Context* ctx;
     
         int cookiefd;
     
@@ -36,7 +39,7 @@ class CookieJar {
         void LoadFile();
     
     public:
-        CookieJar();
+        CookieJar(Context*);
         ~CookieJar();
     
         void WriteFile();

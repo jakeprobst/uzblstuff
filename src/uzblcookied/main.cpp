@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     if (sigaction(SIGINT, &sigact, NULL)) ctx->perror("sigaction");
     if (sigaction(SIGTERM, &sigact, NULL)) ctx->perror("sigaction");
     
-    CookieJar* cookiejar = new CookieJar();
+    CookieJar* cookiejar = new CookieJar(ctx);
     
     try {
         cookiejar->Run();
