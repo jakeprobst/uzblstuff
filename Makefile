@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -ggdb `pkg-config --cflags gtk+-2.0`
+CXXFLAGS = -ggdb `pkg-config --cflags gtk+-2.0 --cflags libxdg-basedir`
 LDFLAGS = `pkg-config --libs gtk+-2.0`
 
 
