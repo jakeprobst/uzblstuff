@@ -11,6 +11,7 @@ class Context {
         bool daemonize;
         bool memory_mode;
         bool help;
+        bool nowrite;
         void log(int, std::string);
         void perror(const char *);
 

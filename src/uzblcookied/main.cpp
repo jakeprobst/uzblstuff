@@ -7,10 +7,11 @@
 #include <cstring>
 
 void help() {
-    printf("Usage: uzblcookied [-v] [-f] [-m]\n"
+    printf("Usage: uzblcookied [-vfmn]\n"
             "    -v - be verbose (use multiple times to increase verbosity level)\n"
             "    -f - foreground (do not detach from terminal)\n"
-            "    -m - operate in memory (write cookies only at exit)\n");
+            "    -m - operate in memory (write cookies only at exit)\n"
+            "    -n - do not write to cookies.txt at all\n");
 }
 
 void sigtermhandle(int a)
@@ -82,8 +83,10 @@ int main(int argc, char **argv)
         cookiejar->Run();
     }
     catch (int e) {
-        cookiejar->WriteFile();
-        ctx->log(1, "Cookies file wrote.");
+        if (!ctx->nowrite) {
+            cookiejar->WriteFile();
+            ctx->log(1, "Cookies file wrote.");
+        }
     }
     delete cookiejar;
     close(fd);

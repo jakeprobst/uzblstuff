@@ -13,10 +13,11 @@ Context::Context(int argc, char **argv) {
     memory_mode = false;
     help = false;
     daemonize = true;
+    nowrite = false;
 
     int index;
     int c;
-    while ((c = getopt(argc, argv, "mvfh")) != -1) {
+    while ((c = getopt(argc, argv, "mvfnh")) != -1) {
         switch (c) {
             case 'v':
                 verbosity++;
@@ -26,6 +27,10 @@ Context::Context(int argc, char **argv) {
                 break;
             case 'f':
                 daemonize = false;
+                break;
+            case 'n':
+                memory_mode = true;
+                nowrite = true;
                 break;
             case 'h':
                 help = true;
