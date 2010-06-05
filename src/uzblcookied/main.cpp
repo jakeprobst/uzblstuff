@@ -10,7 +10,7 @@ void help() {
     printf("Usage: uzblcookied [-v] [-f] [-m]\n"
             "    -v - be verbose (use multiple times to increase verbosity level)\n"
             "    -f - foreground (do not detach from terminal)\n"
-            "    -m - operate in memory (write cookies only on exit)\n");
+            "    -m - operate in memory (write cookies only at exit)\n");
 }
 
 void sigtermhandle(int a)
