@@ -287,8 +287,8 @@ void CookieJar::Run()
     while (true) {
         FD_ZERO(&readfd);
         FD_SET(cookiefd, &readfd);
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 800; // arbitrary
+        timeout.tv_sec = 1; // arbitrary
+        timeout.tv_usec = 0; 
         select(cookiefd+1, &readfd, NULL, NULL, &timeout);
         
         if (!ctx->memory_mode) {
