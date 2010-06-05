@@ -7,8 +7,9 @@
 #include <cstring>
 
 void help() {
-    printf("Usage: uzblcookied [-v] [-m]\n"
+    printf("Usage: uzblcookied [-v] [-f] [-m]\n"
             "    -v - be verbose (use multiple times to increase verbosity level)\n"
+            "    -f - foreground (do not detach from terminal)\n"
             "    -m - operate in memory (write cookies only on exit)\n");
 }
 
