@@ -58,6 +58,6 @@ uzbl-browser:
 uzblcookied:
     * people complained that uzbl-cookie-daemon was slow, so I made this.
     * entirely compatible with uzbl-cookie-daemon, no need to change anything
-	* just run it in befaore starting the first instance of uzbl. Use -m if
-	  you want to sync cookies only at axit (significant performance boost,
-	  but some cookies may be lost if uzblcookied crashed).
+    * just run it in befaore starting the first instance of uzbl. Use -m if
+      you want to sync cookies only at axit (significant performance boost,
+      but some cookies may be lost if uzblcookied crashed).
