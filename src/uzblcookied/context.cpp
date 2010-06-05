@@ -5,6 +5,9 @@
 #include <cstring>
 #include <cerrno>
 
+/** Initializes context based on commandline parameters
+  * @param argc Count commandline parameters
+  * @param argv Commandline parameters array */
 Context::Context(int argc, char **argv) {
     verbosity = 0;
     memory_mode = false;
