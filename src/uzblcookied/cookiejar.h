@@ -17,7 +17,6 @@
 
 #include "cookierequest.h"
 #include "cookie.h"
-#include "context.h"
 
 class CookieJar {
     private:

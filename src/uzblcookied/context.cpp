@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include "context.h"
 
+#include <fstream>
+
 Context::Context(int argc, char **argv) {
     verbosity = 0;
     memory_mode = false;
@@ -25,4 +27,14 @@ Context::Context(int argc, char **argv) {
                 break;
         }
     }
+
+    if (daemonize)
+        out = new std::ofstream("/dev/null", std::ios_base::out);
+    else
+        out = &std::cerr;
+}
+
+void Context::log(int l, std::string s) {
+    if (l < verbosity) return;
+    *out<<s<<std::endl;
 }

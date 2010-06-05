@@ -1,3 +1,4 @@
+#include "context.h"
 #include "cookiejar.h"
 #include "util.h"
 
@@ -191,7 +192,7 @@ void CookieJar::HandleCookie(CookieRequest* req)
     if (!strcmp(req->Cmd(), "GET")) {
         char cookie[1024*4];
         memset(cookie, 0, 1024*4);
-        if (ctx->verbosity >= 2) printf("GET %s%s\n", req->Host(), req->Path());
+        ctx->log(2, std::string("GET ")+req->Host()+req->Path());
         char domain[1024];
         sprintf(domain, ".%s", req->Host());
         
@@ -216,12 +217,11 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         cookie[strlen(cookie)-2] = '\0';
         send(req->Fd(), cookie, strlen(cookie), 0);
-        if (cookie[0] && ctx->verbosity >= 2)
-            printf("[%s]\n\n", cookie);
+        if (cookie[0])
+            ctx->log(2, std::string("[")+cookie+"]");
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        if (ctx->verbosity >= 2)
-            printf("PUT %s%s\n[%s]\n\n", req->Host(), req->Path(), req->Data());
+        ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
         
         Cookie* c = new Cookie(req->Host(), req->Data());
         if (c->path == NULL)
@@ -296,7 +296,7 @@ void CookieJar::Run()
                     needwrite = false;
                     writetimer = 0;
                     WriteFile();
-					if (ctx->verbosity >= 1) printf("Cookies file wrote\n");
+                    ctx->log(1, std::string("Cookies file wrote"));
                 }
                 continue;
             }
