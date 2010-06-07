@@ -34,9 +34,6 @@ int main(int argc, char **argv)
         switch (fork()) {
             case 0:
                 /* we are the daemon process (Har! Har!) */
-                close(0);
-                close(1);
-                close(2);
                 break;
             case -1:
                 perror("fork");
@@ -58,16 +55,24 @@ int main(int argc, char **argv)
     flock* l = new flock;
     l->l_type = F_WRLCK;
     l->l_whence = SEEK_SET;
-    
+
+    if (fcntl(fd, F_SETLK, l) == -1) {
+        std::cerr<<"Can't obtain lock. Probably uzblcookied is already started."<<std::endl;
+        exit(1);
+    }
+
+    /* Detach from terminal */
+    close(0);
+    close(1);
+    close(2);
+
+    /* Write pid to pidfile */
     char pid[16];
     memset(pid, 0, 16);
     sprintf(pid, "%i\n", getpid());
     write(fd, pid, strlen(pid));
     fsync(fd);
 
-    if (fcntl(fd, F_SETLK, l) == -1)
-        return 1;
-    
     /* Register signal handler */
     struct sigaction sigact;
     sigact.sa_handler=&sigtermhandle;
