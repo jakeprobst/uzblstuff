@@ -11,15 +11,6 @@ if [ -z "$XDG_CONFIG_HOME" ]; then
 	export XDG_CONFIG_HOME=$HOME/.config
 fi
 
-#if [ ! -S $XDG_CACHE_HOME/uzbl/cookie_daemon_socket ]; then
-#    $XDG_DATA_HOME/uzbl/scripts/cookie_daemon.py
-#fi
-
-#if [ -z "$(ps ax | grep 4chandaemon.py)" ]; then
-#    $XDG_DATA_HOME/uzbl/scripts/4chandaemon.py &
-#    sleep .1
-#fi
-
 # when run from uzbltreetab:
 # $1: this will be set to "tab" if run from uzbltreetab, so you can have
 #     uzbl-browser handle tab and non-tab instances
@@ -27,7 +18,6 @@ fi
 # $3: name of the uzbl instance
 # $4: path to the uzbltreetab fifo
 # $5: the url to open
-
 
 if [ "$1" = "tab" ]; then
     EMFIFO="/tmp/uzbl_em_$3"

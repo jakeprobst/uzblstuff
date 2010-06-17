@@ -146,7 +146,9 @@ void CookieJar::WriteFile()
         }
         
         if ((c->expires < t && c->expires != 0)) {
-            cookies.remove(c);
+            //printf("removing: %s [%d] %s=%s\n", c->domain, c->expires, c->key, c->value);
+            //delete c;
+            //cookies.remove(c);
             todelete.push_back(c);
             continue;
         }
@@ -181,6 +183,7 @@ void CookieJar::WriteFile()
     fclose(f);
     
     for(iter = todelete.begin(); iter != todelete.end(); iter++) {
+        cookies.remove(*iter);
         delete *iter;
     }
     for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {

@@ -63,9 +63,11 @@ int main(int argc, char **argv)
     }
 
     /* Detach from terminal */
-    close(0);
-    close(1);
-    close(2);
+    if (ctx->daemonize) {
+        close(0);
+        close(1);
+        close(2);
+    }
 
     /* Write pid to pidfile */
     char pid[16];
