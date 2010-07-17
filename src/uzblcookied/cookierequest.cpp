@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "cookierequest.h"
 #include "util.h"
@@ -21,10 +22,10 @@ CookieRequest::CookieRequest(int cfd, char** c)
 
 CookieRequest::~CookieRequest()
 {
-    delete[] cmd;
-    delete[] protocol;
-    delete[] host;
-    delete[] path;
+    free(cmd);
+    free(protocol);
+    free(host);
+    free(path);
     close(fd);
 }
 

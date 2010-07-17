@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stdlib.h>
 
 #include "cookie.h"
 #include "util.h"
@@ -108,7 +109,7 @@ Cookie::Cookie(char* host, char* data)
         
         if (!strcmp(k, "domain")) {
             if (domain) {
-                delete[] domain;
+                free(domain);
                 domain = strdup(v);
             }
         }
@@ -140,10 +141,10 @@ Cookie::Cookie(char* host, char* data)
 
 Cookie::~Cookie()
 {
-    delete[] domain;
-    delete[] path;
-    delete[] key;
-    delete[] value;
+    free(domain);
+    free(path);
+    free(key);
+    free(value);
 }
 
 
