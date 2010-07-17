@@ -26,6 +26,7 @@ CookieRequest::~CookieRequest()
     free(protocol);
     free(host);
     free(path);
+    free(data);
     close(fd);
 }
 
