@@ -311,9 +311,19 @@ void CookieJar::Run()
         socklen_t addrlen = sizeof(addr);
         int cfd = accept(cookiefd, (sockaddr*)&addr, &addrlen);
         
-        char buf[1024*8];
-        memset(buf, 0, 1024*8);
-        recv(cfd, buf, 1024*8, 0);
+        size_t bufSize = 1024*8 + 2;
+        char buf[bufSize];
+        // -2 to make sure there we can add two null bytes at the end
+        int ret = recv(cfd, buf, bufSize - 2, 0);
+        if (ret <= 0) {
+            if (ret == 0)
+                ctx->log(2, std::string("Client hung up"));
+            else
+                ctx->perror("recv");
+            close(cfd);
+            continue;
+        }
+        buf[ret] = buf[ret + 1] = '\0';
         
         char** spl = nullsplit(buf);
         
