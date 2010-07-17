@@ -18,6 +18,7 @@ class Cookie {
     
         Cookie(char*); // for loading from cookies.txt
         Cookie(char*, char*); // for loading from socket
+        Cookie(const Cookie& other);
         ~Cookie();
         
         
@@ -25,7 +26,7 @@ class Cookie {
 
 
 
-bool cookiesort(Cookie*, Cookie*);
+bool cookiesort(const Cookie&, const Cookie&);
 
 
 

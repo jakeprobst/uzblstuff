@@ -7,13 +7,23 @@
 const char* STRPTIME = "%a, %d-%b-%Y %H:%M:%S %Z";
 //Fri, 22-May-2020 03:25:25 GMT
 
-bool cookiesort(Cookie* a, Cookie* b)
+bool cookiesort(const Cookie& a, const Cookie& b)
 {
-    if (strcmp(a->domain, b->domain) < 0)
+    if (strcmp(a.domain, b.domain) < 0)
         return true;
-    if (strcmp(a->path, b->path) < 0)
+    if (strcmp(a.path, b.path) < 0)
         return true;
     return false;
+}
+
+Cookie::Cookie(const Cookie& other)
+{
+    expires = other.expires;
+    secure = other.secure;
+    domain = strdup(other.domain);
+    path = strdup(other.path);
+    key = strdup(other.key);
+    value = strdup(other.value);
 }
 
 Cookie::Cookie(char* data)

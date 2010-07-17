@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/select.h>
+#include <set>
 #include <list>
 #include <pthread.h>
 #include <basedir.h>
@@ -29,7 +30,9 @@ class CookieJar {
     
         fd_set readfd;
         
-        std::list<Cookie*> cookies;
+        typedef bool (*cookiesorter)(const Cookie&, const Cookie&);
+        typedef std::set<Cookie, cookiesorter> cookieSet;
+        cookieSet cookies;
         
         void AddToQueue(int, char**);
         void HandleCookie(CookieRequest*);

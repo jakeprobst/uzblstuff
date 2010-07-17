@@ -16,6 +16,7 @@ bool domain_match(char* a, char* b)
 
 
 CookieJar::CookieJar(Context* c)
+        : cookies(cookiesort)
 {
     if (!xdgInitHandle(&xdg)) throw "Unable to initialize XDG handle.";
 
@@ -74,8 +75,7 @@ void CookieJar::LoadFile()
         if (c == EOF)
             break;
         if (c == '\n') {
-            Cookie* c = new Cookie(buf);
-            cookies.push_back(c);
+            cookies.insert(Cookie(buf));
             
             memset(buf, 0, b);
             b = 0;
@@ -89,8 +89,6 @@ void CookieJar::LoadFile()
 
 void CookieJar::WriteFile()
 {
-    cookies.sort(cookiesort);
-    
     char buf[1024*4];
     memset(buf, 0, 1024*4);
     
@@ -129,15 +127,29 @@ void CookieJar::WriteFile()
     
     int t = time(NULL);
     
-    std::list<Cookie*> todelete;
-    
-    std::list<Cookie*>::iterator iter;
+    cookieSet::iterator iter;
+
+    // First get rid of all expired cookies
+    for(iter = cookies.begin(); iter != cookies.end(); ) {
+        const Cookie& c = *iter;
+
+        if ((c.expires < t && c.expires != 0)) {
+            // We first grab the iterator to the next item in the set.
+            // set gurantees that this iterator stays valid after an erase().
+            cookieSet::iterator next = iter;
+            ++next;
+            cookies.erase(iter);
+            iter = next;
+        } else
+            ++iter;
+    }
+
     for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-        Cookie* c = *iter;
+        const Cookie& c = *iter;
         if (whitelist.size() != 0) {
             bool ok = false;
             for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
-                if (domain_match(c->domain, *witer)) {
+                if (domain_match(c.domain, *witer)) {
                     ok = true;
                     break;
                 }
@@ -146,47 +158,35 @@ void CookieJar::WriteFile()
                 continue;
         }
         
-        if ((c->expires < t && c->expires != 0)) {
-            //printf("removing: %s [%d] %s=%s\n", c->domain, c->expires, c->key, c->value);
-            //delete c;
-            //cookies.remove(c);
-            todelete.push_back(c);
-            continue;
-        }
-        
         memset(buf, 0, 1024*4);
-        strcat(buf, c->domain);
+        strcat(buf, c.domain);
         strcat(buf, "\t");
-        if (c->domain[0] == '.')
+        if (c.domain[0] == '.')
             strcat(buf, "TRUE\t");
         else
             strcat(buf, "FALSE\t");
-        strcat(buf, c->path);
+        strcat(buf, c.path);
         strcat(buf, "\t");
-        if (c->secure == true)
+        if (c.secure == true)
             strcat(buf, "TRUE\t");
         else 
             strcat(buf, "FALSE\t");
-        if (c->expires != 0) {
+        if (c.expires != 0) {
             char tbuf[32];
-            sprintf(tbuf, "%u\t", c->expires);
+            sprintf(tbuf, "%u\t", c.expires);
             strcat(buf, tbuf);
         }
         else 
             strcat(buf, "\t");
         fwrite(buf, 1, strlen(buf), f);
-        fwrite(c->key, 1, strlen(c->key), f);
+        fwrite(c.key, 1, strlen(c.key), f);
         fwrite("\t", 1, 1, f);
-        fwrite(c->value, 1, strlen(c->value), f);
+        fwrite(c.value, 1, strlen(c.value), f);
         fwrite("\n", 1, 1, f);
     }
     
     fclose(f);
     
-    for(iter = todelete.begin(); iter != todelete.end(); iter++) {
-        cookies.remove(*iter);
-        delete *iter;
-    }
     for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
         delete[] *witer;
     }
@@ -203,20 +203,20 @@ void CookieJar::HandleCookie(CookieRequest* req)
         
         int t = time(NULL);
         
-        std::list<Cookie*>::iterator iter;
+        cookieSet::iterator iter;
         for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-            Cookie* c = *iter;
+            const Cookie& c = *iter;
             
-            if(!endswith(domain, c->domain))
+            if(!endswith(domain, c.domain))
                 continue;
-            if(!startswith(req->Path(), c->path))
+            if(!startswith(req->Path(), c.path))
                 continue;
-            if (c->expires < t && c->expires != 0)
+            if (c.expires < t && c.expires != 0)
                 continue;
 
             char tmp[1024*4];
             
-            sprintf(tmp, "%s=%s; ", c->key, c->value);
+            sprintf(tmp, "%s=%s; ", c.key, c.value);
             strcat(cookie, tmp);
         }
         
@@ -228,19 +228,18 @@ void CookieJar::HandleCookie(CookieRequest* req)
     if (!strcmp(req->Cmd(), "PUT")) {
         ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
         
-        Cookie* c = new Cookie(req->Host(), req->Data());
-        if (c->path == NULL)
-            c->path = strdup(req->Path());
+        Cookie c(req->Host(), req->Data());
+        if (c.path == NULL)
+            c.path = strdup(req->Path());
         
-        std::list<Cookie*>::iterator iter;
+        cookieSet::iterator iter;
         int t = time(NULL);
-        if (c->expires != 0) {
-            if (c->expires < t) {
+        if (c.expires != 0) {
+            if (c.expires < t) {
                 for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-                    Cookie* ci = *iter;
-                    if (!strcmp(ci->key, c->key)) {
-                        delete ci;
-                        cookies.remove(ci);
+                    const Cookie& ci = *iter;
+                    if (!strcmp(ci.key, c.key)) {
+                        cookies.erase(iter);
                         break;
                     }
                 }
@@ -251,20 +250,17 @@ void CookieJar::HandleCookie(CookieRequest* req)
         bool found = false;
         
         for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-            if (!strcmp((*iter)->domain, c->domain)) {
-                if (!strcmp((*iter)->path, c->path)) {
-                    if (!strcmp((*iter)->key, c->key)) {
-                        Cookie* c2 = *iter;
-                        delete *iter;
-                        cookies.remove(c2);
+            if (!strcmp(iter->domain, c.domain)) {
+                if (!strcmp(iter->path, c.path)) {
+                    if (!strcmp(iter->key, c.key)) {
+                        cookies.erase(iter);
                         break;
                     }
                 }
             }
         }
         
-        cookies.push_back(c);
-        cookies.sort(cookiesort);
+        cookies.insert(c);
     }
 }
 
