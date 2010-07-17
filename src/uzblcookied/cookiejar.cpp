@@ -287,7 +287,7 @@ void CookieJar::Run()
     int writetimer = 0;
     bool needwrite = false;
     
-    while (true) {
+    while (ctx->running) {
         FD_ZERO(&readfd);
         FD_SET(cookiefd, &readfd);
         timeout.tv_sec = 3; // arbitrary

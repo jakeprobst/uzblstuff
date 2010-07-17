@@ -14,12 +14,12 @@ void help() {
             "    -n - do not write to cookies.txt at all\n");
 }
 
+Context *ctx;
+
 void sigtermhandle(int a)
 {
-    throw 12; // random number, throw something
+    ctx->running = false;
 }
-
-Context *ctx;
 
 int main(int argc, char **argv)
 {

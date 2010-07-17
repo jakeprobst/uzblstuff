@@ -14,6 +14,7 @@ Context::Context(int argc, char **argv) {
     help = false;
     daemonize = true;
     nowrite = false;
+    running = true;
 
     int index;
     int c;

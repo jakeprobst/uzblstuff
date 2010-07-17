@@ -12,6 +12,7 @@ class Context {
         bool memory_mode;
         bool help;
         bool nowrite;
+        bool running;
         void log(int, std::string);
         void perror(const char *);
 
