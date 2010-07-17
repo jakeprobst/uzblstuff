@@ -310,6 +310,10 @@ void CookieJar::Run()
         memset(&addr, 0, sizeof(addr));
         socklen_t addrlen = sizeof(addr);
         int cfd = accept(cookiefd, (sockaddr*)&addr, &addrlen);
+        if (cfd < 0) {
+            ctx->perror("accept");
+            continue;
+        }
         
         size_t bufSize = 1024*8 + 2;
         char buf[bufSize];
