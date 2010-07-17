@@ -141,7 +141,7 @@ char** strsplit(const char* str, char delim)
             
             break;
         }
-        if (str[i-1] == delim) {
+        if (i != 0 && str[i-1] == delim) {
             if (str[i] == delim/* || start - lstart == 1*/) {
                 start++;
                 spaceoff++;
