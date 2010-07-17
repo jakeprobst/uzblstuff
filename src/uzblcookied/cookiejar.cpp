@@ -84,6 +84,7 @@ void CookieJar::LoadFile()
         
         buf[b++] = c;
     }
+    fclose(f);
 }
 
 void CookieJar::WriteFile()
