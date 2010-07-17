@@ -12,7 +12,6 @@ class Cookie {
         bool secure;
         char* domain;
         char* path;
-        char* data;
         
         char* key;
         char* value;

@@ -98,6 +98,8 @@ int main(int argc, char **argv)
     delete cookiejar;
     close(fd);
     if (unlink(pidfile)) ctx->perror("unlink");
+
+    delete ctx;
     
     return 1;
 }
