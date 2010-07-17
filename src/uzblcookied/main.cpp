@@ -53,11 +53,12 @@ int main(int argc, char **argv)
     xdgWipeHandle(&xdg);
     int fd = open(pidfile, O_RDWR|O_CREAT, 0600);
     
-    flock* l = new flock;
-    l->l_type = F_WRLCK;
-    l->l_whence = SEEK_SET;
+    flock l;
+    memset(&l, 0, sizeof(l));
+    l.l_type = F_WRLCK;
+    l.l_whence = SEEK_SET;
 
-    if (fcntl(fd, F_SETLK, l) == -1) {
+    if (fcntl(fd, F_SETLK, &l) == -1) {
         std::cerr<<"Can't obtain lock. Probably uzblcookied is already started."<<std::endl;
         exit(1);
     }
