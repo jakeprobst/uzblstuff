@@ -56,6 +56,8 @@ Cookie::Cookie(char* host, char* data)
     expires = 0;
     secure = false;
     path = NULL;
+    key = strdup("");
+    value = strdup("");
 
     char** vars = strsplit(data, ';');
     for(int i = 0; vars[i]; i++) {
@@ -124,6 +126,8 @@ Cookie::Cookie(char* host, char* data)
             expires = mktime(&t);
         }
         else {
+            free(key);
+            free(value);
             key = strdup(k);
             value = strdup(v);
         }
