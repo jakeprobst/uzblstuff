@@ -292,7 +292,12 @@ void CookieJar::Run()
         FD_SET(cookiefd, &readfd);
         timeout.tv_sec = 3; // arbitrary
         timeout.tv_usec = 0; 
-        select(cookiefd+1, &readfd, NULL, NULL, &timeout);
+        int i = select(cookiefd+1, &readfd, NULL, NULL, &timeout);
+
+        if (i < 0) {
+            ctx->perror("select");
+            continue;
+        }
         
         if (!ctx->memory_mode) {
             if (!FD_ISSET(cookiefd, &readfd) || writetimer > 100) { // arbitrary
