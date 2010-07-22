@@ -195,8 +195,7 @@ void CookieJar::WriteFile()
 void CookieJar::HandleCookie(CookieRequest* req)
 {
     if (!strcmp(req->Cmd(), "GET")) {
-        char cookie[1024*4];
-        memset(cookie, 0, 1024*4);
+        std::string cookie;
         ctx->log(2, std::string("GET ")+req->Host()+req->Path());
         char domain[1024];
         sprintf(domain, ".%s", req->Host());
@@ -214,15 +213,18 @@ void CookieJar::HandleCookie(CookieRequest* req)
             if (c.expires < t && c.expires != 0)
                 continue;
 
-            char tmp[1024*4];
-            
-            sprintf(tmp, "%s=%s; ", c.key, c.value);
-            strcat(cookie, tmp);
+            cookie += c.key;
+            cookie += "=";
+            cookie += c.value;
+            cookie += "; ";
         }
-        
-        cookie[strlen(cookie)-2] = '\0';
-        send(req->Fd(), cookie, strlen(cookie), 0);
-        if (cookie[0])
+
+        // Strip away the last "; "
+        if (!cookie.empty())
+            cookie = cookie.substr(0, cookie.length() - 2);
+
+        send(req->Fd(), cookie.c_str(), cookie.length(), 0);
+        if (!cookie.empty())
             ctx->log(2, std::string("[")+cookie+"]");
     }
     if (!strcmp(req->Cmd(), "PUT")) {
