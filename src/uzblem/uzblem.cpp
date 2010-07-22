@@ -1,5 +1,8 @@
 #include "uzblem.h"
 
+#include <stdlib.h>
+#include <unistd.h>
+
 // plugins
 #include "bind.h"
 #include "onevent.h"
@@ -21,8 +24,20 @@ UzblEM::UzblEM(char* sock)
     
     bind(servfd, (sockaddr*)&local, len);
     listen(servfd, 0);
-    sockfd =  accept(servfd, NULL, 0);
     
+    switch (fork()) {
+        case 0:
+            
+            break;
+        case -1:
+            perror("fork");
+            exit(1);
+        default:
+            exit(0);
+    }
+    
+    
+    sockfd =  accept(servfd, NULL, 0);    
     sockpath = strdup(sock);
     name = NULL;
     

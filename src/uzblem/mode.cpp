@@ -8,13 +8,13 @@ Mode::Mode(UzblEM* e)
 {
     em = e;
     
-    command.push_back(strdup("forward_keys = 0"));
+    /*command.push_back(strdup("forward_keys = 0"));
     command.push_back(strdup("keycmd_events = 1"));
     command.push_back(strdup("modcmd_updates = 1"));
     
     insert.push_back(strdup("forward_keys = 1"));
     insert.push_back(strdup("keycmd_events = 0"));
-    insert.push_back(strdup("modcmd_updates = 0"));
+    insert.push_back(strdup("modcmd_updates = 0"));*/
 }
 
 

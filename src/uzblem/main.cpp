@@ -4,8 +4,6 @@
 
 
 
-
-
 int main(int argc, char** argv)
 {
     if (argc != 2) {
@@ -16,7 +14,6 @@ int main(int argc, char** argv)
     UzblEM* uzblem = new UzblEM(argv[1]);
     uzblem->Run();
     delete uzblem;
-    
     //UzblEM uzblem = UzblEM(argv[1]);
     //uzblem.Run();
 }
