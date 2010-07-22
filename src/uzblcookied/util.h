@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-char* strdup(const char*);
-
 char** nullsplit(const char*);
 char* strjoin(char**);
 char* strjoin(const char*, char**);

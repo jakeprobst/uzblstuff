@@ -1,15 +1,5 @@
 #include "util.h"
 
-
-char* strdup(char* s)
-{
-    char* c = new char[strlen(s)+1];
-    strncpy(c, s, strlen(s));
-    c[strlen(s)] = '\0';
-    
-    return c;
-}
-
 char* strjoin(char** s)
 {
     int len = 0;
