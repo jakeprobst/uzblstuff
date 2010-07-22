@@ -7,7 +7,7 @@
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
 
-bool domain_match(char* a, char* b)
+bool domain_match(const char* a, const char* b)
 {
     if (startswith(b, ".") && endswith(a, b))
         return true;
@@ -75,35 +75,19 @@ void CookieJar::LoadFile()
 
 void CookieJar::WriteFile()
 {
-    char buf[1024*4];
-    memset(buf, 0, 1024*4);
-    
-    std::list<char*>::iterator witer;
-    std::list<char*> whitelist;
-    sprintf(buf, "%s/uzbl/cookie_whitelist", xdgDataHome(&xdg));
-    FILE* f = fopen(buf, "r");
-    if (f != NULL) {
-        memset(buf, 0, 1024*4);
-        int b = 0, c = 0;
-        while (true) {
-            c = fgetc(f);
-            if (c == EOF)
-                break;
-            if (c == '\n') {
-                whitelist.push_back(strdup(buf));
-                
-                memset(buf, 0, b);
-                b = 0;
-                continue;
-            }
-            buf[b++] = c;
-        }
-        fclose(f);
-    }
-    
-    memset(buf, 0, 1024*4);
+    std::set<std::string>::iterator witer;
+    std::set<std::string> whitelist;
 
-    std::string path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
+    std::string path = xdgDataHome(&xdg) + std::string("/uzbl/cookie_whitelist");
+    std::ifstream wl(path.c_str());
+    while (wl.good()) {
+        std::string line;
+        getline(wl, line);
+        whitelist.insert(line);
+    }
+    wl.close();
+
+    path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
     std::ofstream file(path.c_str());
     if (!file.good())
         return;
@@ -137,7 +121,7 @@ void CookieJar::WriteFile()
         if (whitelist.size() != 0) {
             bool ok = false;
             for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
-                if (domain_match(c.domain, *witer)) {
+                if (domain_match(c.domain, witer->c_str())) {
                     ok = true;
                     break;
                 }
@@ -160,10 +144,6 @@ void CookieJar::WriteFile()
             file << c.expires;
         file << "\t";
         file << c.key << "\t" << c.value << "\n";
-    }
-    
-    for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
-        delete[] *witer;
     }
 }
 
