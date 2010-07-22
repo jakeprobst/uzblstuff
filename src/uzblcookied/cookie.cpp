@@ -13,6 +13,9 @@ bool cookiesort(const Cookie& a, const Cookie& b)
         return true;
     if (strcmp(a.path, b.path) < 0)
         return true;
+    if (strcmp(a.key, b.key) < 0)
+        return true;
+    // These properties aren't compared: value, secure, expires
     return false;
 }
 
