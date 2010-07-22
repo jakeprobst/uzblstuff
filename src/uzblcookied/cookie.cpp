@@ -9,12 +9,15 @@ const char* STRPTIME = "%a, %d-%b-%Y %H:%M:%S %Z";
 
 bool cookiesort(const Cookie& a, const Cookie& b)
 {
-    if (strcmp(a.domain, b.domain) < 0)
-        return true;
-    if (strcmp(a.path, b.path) < 0)
-        return true;
-    if (strcmp(a.key, b.key) < 0)
-        return true;
+    int res;
+#define COMPARE(type) \
+    res = strcmp(a.type, b.type); \
+    if (res != 0) \
+        return (res < 0) ? true : false;
+    COMPARE(domain);
+    COMPARE(path);
+    COMPARE(key);
+#undef COMPARE
     // These properties aren't compared: value, secure, expires
     return false;
 }
