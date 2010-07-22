@@ -231,36 +231,16 @@ void CookieJar::HandleCookie(CookieRequest* req)
         Cookie c(req->Host(), req->Data());
         if (c.path == NULL)
             c.path = strdup(req->Path());
-        
-        cookieSet::iterator iter;
-        int t = time(NULL);
-        if (c.expires != 0) {
-            if (c.expires < t) {
-                for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-                    const Cookie& ci = *iter;
-                    if (!strcmp(ci.key, c.key)) {
-                        cookies.erase(iter);
-                        break;
-                    }
-                }
-                return;
-            }
+
+        std::pair<cookieSet::iterator, bool> res = cookies.insert(c);
+        if (!res.second) {
+            // There was already another cookie with is equal to this one,
+            // remove the other one and then insert again.
+            // If this new cookie is already expired, the normal expiry machine
+            // will kick in and remove it later on.
+            cookies.erase(res.first);
+            cookies.insert(c);
         }
-        
-        bool found = false;
-        
-        for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-            if (!strcmp(iter->domain, c.domain)) {
-                if (!strcmp(iter->path, c.path)) {
-                    if (!strcmp(iter->key, c.key)) {
-                        cookies.erase(iter);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        cookies.insert(c);
     }
 }
 
