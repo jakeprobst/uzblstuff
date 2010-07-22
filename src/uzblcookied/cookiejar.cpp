@@ -102,15 +102,17 @@ void CookieJar::WriteFile()
     }
     
     memset(buf, 0, 1024*4);
-    sprintf(buf, "%s/uzbl/cookies.txt", xdgDataHome(&xdg));
-    f = fopen(buf, "w");
-    
+
+    std::string path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
+    std::ofstream file(path.c_str());
+    if (!file.good())
+        return;
+
     // as a note, that link isn`t actually valid anymore.
-    const char* HEAD = "    # Netscape HTTP Cookie File\n" \
+    file <<   "    # Netscape HTTP Cookie File\n" \
               "    # http://www.netscape.com/newsref/std/cookie_spec.html\n" \
               "    # This is a generated file!  Do not edit.\n\n";
-    fwrite(HEAD, 1, strlen(HEAD), f);
-    
+
     int t = time(NULL);
     
     cookieSet::iterator iter;
@@ -144,34 +146,21 @@ void CookieJar::WriteFile()
                 continue;
         }
         
-        memset(buf, 0, 1024*4);
-        strcat(buf, c.domain);
-        strcat(buf, "\t");
+        file << c.domain << "\t";
         if (c.domain[0] == '.')
-            strcat(buf, "TRUE\t");
+            file << "TRUE\t";
         else
-            strcat(buf, "FALSE\t");
-        strcat(buf, c.path);
-        strcat(buf, "\t");
+            file << "FALSE\t";
+        file << c.path << "\t";
         if (c.secure == true)
-            strcat(buf, "TRUE\t");
-        else 
-            strcat(buf, "FALSE\t");
-        if (c.expires != 0) {
-            char tbuf[32];
-            sprintf(tbuf, "%u\t", c.expires);
-            strcat(buf, tbuf);
-        }
-        else 
-            strcat(buf, "\t");
-        fwrite(buf, 1, strlen(buf), f);
-        fwrite(c.key, 1, strlen(c.key), f);
-        fwrite("\t", 1, 1, f);
-        fwrite(c.value, 1, strlen(c.value), f);
-        fwrite("\n", 1, 1, f);
+            file << "TRUE\t";
+        else
+            file << "FALSE\t";
+        if (c.expires != 0)
+            file << c.expires;
+        file << "\t";
+        file << c.key << "\t" << c.value << "\n";
     }
-    
-    fclose(f);
     
     for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
         delete[] *witer;
