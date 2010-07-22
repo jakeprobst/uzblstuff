@@ -1,6 +1,8 @@
 #include "cookiejar.h"
 #include "util.h"
 
+#include <fstream>
+
 //extern Context *ctx;
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
@@ -49,42 +51,26 @@ CookieJar::~CookieJar()
 
 void CookieJar::LoadFile()
 {
-    char buf[1024*4];
-    memset(buf, 0, 1024*4);
-    sprintf(buf, "%s/uzbl/cookies.txt", xdgDataHome(&xdg));
-    
-    FILE* f = fopen(buf, "r");
-    if (f == NULL)
+    std::string path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
+    std::ifstream file(path.c_str());
+    if (!file.good())
         return;
-    memset(buf, 0, 1024*4);
-    
-    int c, n = 0;
-    while (n != 2) {
-        c = fgetc(f);
-        if (c == EOF)
-            return;
-        if (c == '\n')
-            n++;
-        else
-            n = 0;
-    }
-    
-    int b = 0;
-    while (true) {
-        c = fgetc(f);
-        if (c == EOF)
-            break;
-        if (c == '\n') {
-            cookies.insert(Cookie(buf));
-            
-            memset(buf, 0, b);
-            b = 0;
+
+    std::string line;
+    while (file.good()) {
+        line.clear();
+        getline(file, line);
+
+        // Ignore this line if it's a comment or empty
+        if (line.empty())
             continue;
-        }
-        
-        buf[b++] = c;
+
+        size_t pos = line.find_first_not_of(' ');
+        if (pos != std::string::npos && line[pos] == '#')
+            continue;
+
+        cookies.insert(Cookie(line.c_str()));
     }
-    fclose(f);
 }
 
 void CookieJar::WriteFile()

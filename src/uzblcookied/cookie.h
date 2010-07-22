@@ -16,8 +16,8 @@ class Cookie {
         char* key;
         char* value;
     
-        Cookie(char*); // for loading from cookies.txt
-        Cookie(char*, char*); // for loading from socket
+        Cookie(const char*); // for loading from cookies.txt
+        Cookie(const char*, const char*); // for loading from socket
         Cookie(const Cookie& other);
         ~Cookie();
         

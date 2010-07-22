@@ -29,7 +29,7 @@ Cookie::Cookie(const Cookie& other)
     value = strdup(other.value);
 }
 
-Cookie::Cookie(char* data)
+Cookie::Cookie(const char* data)
 {
     char tdomain[512];
     char tbleh[32];
@@ -63,7 +63,7 @@ Cookie::Cookie(char* data)
     value = strdup(tvalue);
 }
 
-Cookie::Cookie(char* host, char* data)
+Cookie::Cookie(const char* host, const char* data)
 {
     domain = strdup(host);
     expires = 0;
