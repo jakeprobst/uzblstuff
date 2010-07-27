@@ -57,5 +57,5 @@ void Context::log(int l, std::string s) {
 
 /** Emulates perror(3) behaviour, but writes to log, whatever it is */
 void Context::perror(const char *s) {
-	*out<<s<<": "<<strerror(errno)<<std::endl;
+    *out<<s<<": "<<strerror(errno)<<std::endl;
 }

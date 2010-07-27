@@ -80,7 +80,7 @@ void CookieJar::LoadFile()
 int CookieJar::ReadWhitelist(std::string &path, std::set<std::string> &whitelist) {
     std::ifstream wl(path.c_str());
 
-	if (!wl.good()) return -1;
+    if (!wl.good()) return -1;
 
     while (wl.good()) {
         std::string line;
@@ -89,7 +89,7 @@ int CookieJar::ReadWhitelist(std::string &path, std::set<std::string> &whitelist
     }
     wl.close();
 
-	return whitelist.size();
+    return whitelist.size();
 }
 
 void CookieJar::WriteFile()
@@ -98,21 +98,21 @@ void CookieJar::WriteFile()
 
     std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_whitelist");
 
-	int whitelisttype = ReadWhitelist(path, whitelist);
+    int whitelisttype = ReadWhitelist(path, whitelist);
 
-	/* return value 0 means that whitelist file exists, but is empty. It means
-	 * we shoud not write any cookie */
-	if (whitelisttype == 0) {
-		ctx->log(1, "Whitelist is empty, not writing cookies file.");
-		return;
-	}
+    /* return value 0 means that whitelist file exists, but is empty. It means
+     * we shoud not write any cookie */
+    if (whitelisttype == 0) {
+        ctx->log(1, "Whitelist is empty, not writing cookies file.");
+        return;
+    }
 
     path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
     std::ofstream file(path.c_str());
     if (!file.good()) {
-		ctx->log(1, "Cannot write cookies file.");
+        ctx->log(1, "Cannot write cookies file.");
         return;
-	}
+    }
 
     // as a note, that link isn`t actually valid anymore.
     file <<   "    # Netscape HTTP Cookie File\n" \
@@ -140,11 +140,11 @@ void CookieJar::WriteFile()
 
     for(iter = cookies.begin(); iter != cookies.end(); iter++) {
         const Cookie& c = *iter;
-		/* if whitelisttype == -1, whitelistfile does not exist, so we should
-		 * accept all cookies */
+        /* if whitelisttype == -1, whitelistfile does not exist, so we should
+         * accept all cookies */
         if (whitelisttype > 0) {
             bool ok = false;
-    		std::set<std::string>::iterator it;
+            std::set<std::string>::iterator it;
             for(it = whitelist.begin(); it != whitelist.end(); it++) {
                 if (domain_match(c.domain, it->c_str())) {
                     ok = true;
@@ -170,7 +170,7 @@ void CookieJar::WriteFile()
         file << "\t";
         file << c.key << "\t" << c.value << "\n";
     }
-	ctx->log(1, "Cookies file wrote.");
+    ctx->log(1, "Cookies file wrote.");
 }
 
 void CookieJar::HandleCookie(CookieRequest* req)
