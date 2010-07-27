@@ -45,6 +45,7 @@ class CookieJar {
         CookieJar(Context*);
         ~CookieJar();
     
+		int ReadWhitelist(std::string &, std::set<std::string> &);
         void WriteFile();
         void Run();
     

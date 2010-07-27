@@ -73,18 +73,37 @@ void CookieJar::LoadFile()
     }
 }
 
-void CookieJar::WriteFile()
-{
-    std::set<std::string> whitelist;
-
-    std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_whitelist");
+/* Reads whitelist file.
+ * returns:
+ *   -1     if whitelist file does not exist
+ *   number of entries otherwise */
+int CookieJar::ReadWhitelist(std::string &path, std::set<std::string> &whitelist) {
     std::ifstream wl(path.c_str());
+
+	if (!wl.good()) return -1;
+
     while (wl.good()) {
         std::string line;
         getline(wl, line);
         whitelist.insert(line);
     }
     wl.close();
+
+	return whitelist.size();
+}
+
+void CookieJar::WriteFile()
+{
+    std::set<std::string> whitelist;
+
+    std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_whitelist");
+
+	int whitelisttype = ReadWhitelist(path, whitelist);
+
+	/* return value 0 means that whitelist file exists, but is empty. It means
+	 * we shoud not write any cookie */
+	if (whitelisttype == 0)
+		return;
 
     path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
     std::ofstream file(path.c_str());
@@ -117,7 +136,9 @@ void CookieJar::WriteFile()
 
     for(iter = cookies.begin(); iter != cookies.end(); iter++) {
         const Cookie& c = *iter;
-        if (whitelist.size() != 0) {
+		/* if whitelisttype == -1, whitelistfile does not exist, so we should
+		 * accept all cookies */
+        if (whitelisttype > 0) {
             bool ok = false;
     		std::set<std::string>::iterator it;
             for(it = whitelist.begin(); it != whitelist.end(); it++) {
