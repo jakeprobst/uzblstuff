@@ -78,7 +78,7 @@ void CookieJar::WriteFile()
     std::set<std::string>::iterator witer;
     std::set<std::string> whitelist;
 
-    std::string path = xdgDataHome(&xdg) + std::string("/uzbl/cookie_whitelist");
+    std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_whitelist");
     std::ifstream wl(path.c_str());
     while (wl.good()) {
         std::string line;
