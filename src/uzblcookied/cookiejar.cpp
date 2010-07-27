@@ -102,13 +102,17 @@ void CookieJar::WriteFile()
 
 	/* return value 0 means that whitelist file exists, but is empty. It means
 	 * we shoud not write any cookie */
-	if (whitelisttype == 0)
+	if (whitelisttype == 0) {
+		ctx->log(1, "Whitelist is empty, not writing cookies file.");
 		return;
+	}
 
     path = xdgDataHome(&xdg) + std::string("/uzbl/cookies.txt");
     std::ofstream file(path.c_str());
-    if (!file.good())
+    if (!file.good()) {
+		ctx->log(1, "Cannot write cookies file.");
         return;
+	}
 
     // as a note, that link isn`t actually valid anymore.
     file <<   "    # Netscape HTTP Cookie File\n" \
@@ -166,6 +170,7 @@ void CookieJar::WriteFile()
         file << "\t";
         file << c.key << "\t" << c.value << "\n";
     }
+	ctx->log(1, "Cookies file wrote.");
 }
 
 void CookieJar::HandleCookie(CookieRequest* req)

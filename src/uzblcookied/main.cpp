@@ -19,6 +19,7 @@ Context *ctx;
 void sigtermhandle(int a)
 {
     ctx->running = false;
+    ctx->log(1, "Singal caught and handled.");
 }
 
 int main(int argc, char **argv)
@@ -92,8 +93,8 @@ int main(int argc, char **argv)
     }
     catch (int e) {
         if (!ctx->nowrite) {
+            ctx->log(1, "Trying to write cookies file.");
             cookiejar->WriteFile();
-            ctx->log(1, "Cookies file wrote.");
         }
     }
     delete cookiejar;
