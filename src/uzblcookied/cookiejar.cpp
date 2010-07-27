@@ -75,7 +75,6 @@ void CookieJar::LoadFile()
 
 void CookieJar::WriteFile()
 {
-    std::set<std::string>::iterator witer;
     std::set<std::string> whitelist;
 
     std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_whitelist");
@@ -120,8 +119,9 @@ void CookieJar::WriteFile()
         const Cookie& c = *iter;
         if (whitelist.size() != 0) {
             bool ok = false;
-            for(witer = whitelist.begin(); witer != whitelist.end(); witer++) {
-                if (domain_match(c.domain, witer->c_str())) {
+    		std::set<std::string>::iterator it;
+            for(it = whitelist.begin(); it != whitelist.end(); it++) {
+                if (domain_match(c.domain, it->c_str())) {
                     ok = true;
                     break;
                 }
