@@ -270,8 +270,8 @@ void CookieJar::Run()
                 if (needwrite) {
                     needwrite = false;
                     writetimer = 0;
+                    ctx->log(1, std::string("Write request received. Trying to write cookies file."));
                     WriteFile();
-                    ctx->log(1, std::string("Cookies file wrote"));
                 }
                 continue;
             }
