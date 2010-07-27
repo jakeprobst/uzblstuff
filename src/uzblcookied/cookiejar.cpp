@@ -248,6 +248,12 @@ void CookieJar::Run()
     bool needwrite = false;
     
     while (ctx->running) {
+        if (ctx->writerequest) {
+            ctx->writerequest = false;
+            ctx->log(1, "Write request received. Trying to write cookies file.");
+            WriteFile();
+        }
+
         FD_ZERO(&readfd);
         FD_SET(cookiefd, &readfd);
         timeout.tv_sec = 3; // arbitrary

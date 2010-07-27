@@ -13,6 +13,7 @@ Context::Context(int argc, char **argv) {
     memory_mode = false;
     help = false;
     daemonize = true;
+    writerequest = false;
     nowrite = false;
     running = true;
 

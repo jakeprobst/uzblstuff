@@ -16,10 +16,19 @@ void help() {
 
 Context *ctx;
 
-void sigtermhandle(int a)
+void sighandle(int a)
 {
-    ctx->running = false;
-    ctx->log(1, "Singal caught and handled.");
+    switch(a) {
+        case SIGTERM:
+        case SIGINT:
+            ctx->running = false;
+            ctx->log(1, "Singal TERM/INT caught and handled.");
+            break;
+        case SIGUSR1:
+            ctx->writerequest = true;
+            ctx->log(1, "Singal USR1 caught and handled.");
+            break;
+    }
 }
 
 int main(int argc, char **argv)
@@ -80,9 +89,10 @@ int main(int argc, char **argv)
 
     /* Register signal handler */
     struct sigaction sigact;
-    sigact.sa_handler=sigtermhandle;
+    sigact.sa_handler=sighandle;
     sigemptyset (&sigact.sa_mask);
     sigact.sa_flags = 0;
+    if (sigaction(SIGUSR1, &sigact, NULL)) ctx->perror("sigaction");
     if (sigaction(SIGINT, &sigact, NULL)) ctx->perror("sigaction");
     if (sigaction(SIGTERM, &sigact, NULL)) ctx->perror("sigaction");
     

@@ -11,6 +11,7 @@ class Context {
         bool daemonize;
         bool memory_mode;
         bool help;
+        bool writerequest;
         bool nowrite;
         bool running;
         void log(int, std::string);
