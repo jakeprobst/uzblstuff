@@ -88,15 +88,12 @@ int main(int argc, char **argv)
     
     CookieJar* cookiejar = new CookieJar(ctx);
     
-    try {
-        cookiejar->Run();
+    cookiejar->Run();
+    if (!ctx->nowrite) {
+        ctx->log(1, "Trying to write cookies file.");
+        cookiejar->WriteFile();
     }
-    catch (int e) {
-        if (!ctx->nowrite) {
-            ctx->log(1, "Trying to write cookies file.");
-            cookiejar->WriteFile();
-        }
-    }
+
     delete cookiejar;
     close(fd);
     if (unlink(pidfile)) ctx->perror("unlink");
