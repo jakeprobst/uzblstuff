@@ -92,7 +92,8 @@ int CookieJar::ReadWhitelist(std::string &path, std::set<std::string> &whitelist
     return whitelist.size();
 }
 
-void CookieJar::WriteFile()
+
+bool CookieJar::IsInWhitelist(const Cookie& c)
 {
     std::set<std::string> whitelist;
 
@@ -100,10 +101,38 @@ void CookieJar::WriteFile()
 
     int whitelisttype = ReadWhitelist(path, whitelist);
 
+    // 0 = empty, -1 = nonexistant
+    if (whitelisttype == -1) {
+        ctx->log(1, "whitelist doesnt exist, accepting all cookies.");
+        return true;
+    }
+    if (whitelisttype == 0) {
+        ctx->log(1, "Whitelist is empty, not accepting cookies.");
+        return false;
+    }
+    
+    std::set<std::string>::iterator it;
+    for(it = whitelist.begin(); it != whitelist.end(); it++) {
+        if (domain_match(c.domain, it->c_str())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void CookieJar::WriteFile()
+{
+    std::set<std::string> storelist;
+
+    std::string path = xdgConfigHome(&xdg) + std::string("/uzbl/cookie_storelist");
+
+    int storelisttype = ReadWhitelist(path, storelist);
+
     /* return value 0 means that whitelist file exists, but is empty. It means
      * we shoud not write any cookie */
-    if (whitelisttype == 0) {
-        ctx->log(1, "Whitelist is empty, not writing cookies file.");
+    if (storelisttype == 0) {
+        ctx->log(1, "Storelist is empty, not writing cookies file.");
         return;
     }
 
@@ -142,10 +171,10 @@ void CookieJar::WriteFile()
         const Cookie& c = *iter;
         /* if whitelisttype == -1, whitelistfile does not exist, so we should
          * accept all cookies */
-        if (whitelisttype > 0) {
+        if (storelisttype > 0) {
             bool ok = false;
             std::set<std::string>::iterator it;
-            for(it = whitelist.begin(); it != whitelist.end(); it++) {
+            for(it = storelist.begin(); it != storelist.end(); it++) {
                 if (domain_match(c.domain, it->c_str())) {
                     ok = true;
                     break;
@@ -209,11 +238,15 @@ void CookieJar::HandleCookie(CookieRequest* req)
             ctx->log(2, std::string("[")+cookie+"]");
     }
     if (!strcmp(req->Cmd(), "PUT")) {
-        ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
-        
         Cookie c(req->Host(), req->Data());
         if (c.path == NULL)
             c.path = strdup(req->Path());
+        if (!IsInWhitelist(c)) {
+            ctx->log(2, std::string("NOTPUT ")+req->Host()+req->Path()+": "+req->Data());
+            return;
+        }
+
+        ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
 
         std::pair<cookieSet::iterator, bool> res = cookies.insert(c);
         if (!res.second) {

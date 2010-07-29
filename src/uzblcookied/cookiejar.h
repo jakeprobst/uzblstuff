@@ -37,6 +37,7 @@ class CookieJar {
         void AddToQueue(int, char**);
         void HandleCookie(CookieRequest*);
         
+        bool IsInWhitelist(const Cookie&);
         void RemoveDuplicates();
         
         void LoadFile();
