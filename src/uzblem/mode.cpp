@@ -58,13 +58,13 @@ void Mode::ConfigChange(char** cmd)
         
     }
     
-    char a[1024];
+    /*char a[1024];
     if (mode == MODE_COMMAND)
         strcpy(a, "EVENT [1234] MODE_CHANGE command");
     if (mode == MODE_INSERT)
         strcpy(a, "EVENT [1234] MODE_CHANGE insert");
     
-    em->Command(a);
+    em->Command(a);*/
     
 }
 
@@ -104,8 +104,8 @@ void Mode::SetMode(std::vector<char*> v)
     vector<char*>::iterator iter;
     for(iter = v.begin(); iter != v.end(); iter++) {
         char c[1024];
-        sprintf(c, "set %s", *iter);
-        em->SendCommand(c);
+        //sprintf(c, "%s", *iter);
+        em->SendCommand(*iter);
     }
 }
 

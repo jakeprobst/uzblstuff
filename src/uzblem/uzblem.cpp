@@ -90,7 +90,6 @@ void UzblEM::EventHandler(char** cmd)
 void UzblEM::Command(char* c)
 {
     char** cmd = strsplit(c, ' ');
-    //printf("cmd: %s\n", c);
     
     
     if (!name) {

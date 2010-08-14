@@ -26,9 +26,7 @@ void OnEvent::RegisterEvent(char** cmd)
     strncpy(ev, cmd[1], strlen(cmd[1])+1);
     
     EventCallback* e = new EventCallback(ev, c);
-    
-    //printf("event register: [%s]:[%s]\n", cmd[1], c);
-    
+
     events.push_back(e);
 }
 
@@ -39,8 +37,6 @@ void OnEvent::CheckEvents(char** cmd)
     vector<EventCallback*>::iterator iter;
     for(iter = events.begin(); iter != events.end(); iter++) {
         if ((*iter)->Match(cmd[0])) {
-            
-            //char* c = (*iter)->GetCmd()
             if (cmd[1] && strcontains((*iter)->GetCmd(), "%s")) {
                 char* arg = strjoin(" ", cmd+1);
                 char* c = strreplace((*iter)->GetCmd(), "%s", arg, -1);

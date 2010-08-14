@@ -15,7 +15,10 @@ CookieRequest::CookieRequest(int cfd, char** c)
     
     data = NULL;
     if (!strcmp(cmd, "PUT")) {
-        data = strdup(c[4]);
+        if (c[4])
+            data = strdup(c[4]);
+        else
+            data = (char*)malloc(1);
     }
 }
 
