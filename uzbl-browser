@@ -32,6 +32,6 @@ else
     SOCKID="$RANDOM$RANDOM"
     SOCKPATH="/tmp/uzbl_socket_$SOCKID"
     /home/jake/projects/uzblstuff/uzblem $SOCKPATH
-    uzbl-core --connect-socket $SOCKPATH "$1" -vp
+    uzbl-core --connect-socket $SOCKPATH "$1" -vp | grep -v PTR_MOVE
 fi
 

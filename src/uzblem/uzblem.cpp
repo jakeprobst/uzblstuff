@@ -120,8 +120,8 @@ void UzblEM::SendCommand(char* c)
 void UzblEM::Run()
 {
     int sb = 0;
-    char sbuf[1024];
-    memset(sbuf, 0, 1024);
+    char sbuf[BUFSIZE];
+    memset(sbuf, 0, BUFSIZE);
     while (true) {
         int r = read(sockfd, sbuf+sb, 1);
         if (r == 0)
@@ -130,7 +130,7 @@ void UzblEM::Run()
         if (sbuf[sb] == '\n') {
             sbuf[sb] = '\0';
             Command(sbuf);
-            memset(sbuf, 0, 1024);
+            memset(sbuf, 0, BUFSIZE);
             sb = -1;
         }
         

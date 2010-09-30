@@ -126,8 +126,8 @@ void UzblTreeTab::SaveSession()
     else
         sprintf(spath, "%s/uzbl/tabtreesession", getenv("XDG_DATA_HOME"));
     
-    int sessionfd = open(spath, O_WRONLY|O_CREAT|O_TRUNC);
-    fchmod(sessionfd, 0666);
+    int sessionfd = open(spath, O_WRONLY|O_CREAT|O_TRUNC, 0666);
+    //fchmod(sessionfd, 0666);
     
     int i = 0;
     for(GList* l = uzblinstances; l != NULL; l = g_list_next(l)) {

@@ -17,6 +17,8 @@
 #include "str.h"
 #include "plugin.h"
 
+const int BUFSIZE = 4096;
+
 class UzblEM {
     private:
         int sockfd;
