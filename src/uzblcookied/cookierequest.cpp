@@ -30,7 +30,7 @@ CookieRequest::~CookieRequest()
     free(host);
     free(path);
     free(data);
-    close(fd);
+    //close(fd);
 }
 
 

@@ -39,6 +39,11 @@ CookieJar::CookieJar(Context* c)
     
     listen(cookiefd, 10);
     //printf("listen: %s\n", strerror(errno));
+    
+    maxfd = cookiefd;
+    FD_ZERO(&masterfd);
+    FD_SET(cookiefd, &masterfd);
+    
 
     LoadFile();
 }
@@ -230,14 +235,18 @@ void CookieJar::HandleCookie(CookieRequest* req)
         }
 
         // Strip away the last "; "
-        if (!cookie.empty())
+        if (cookie.empty()) {
+            send(req->Fd(), "\0", 1, 0);
+        }
+        else {
             cookie = cookie.substr(0, cookie.length() - 2);
-
-        send(req->Fd(), cookie.c_str(), cookie.length(), 0);
-        if (!cookie.empty())
+            send(req->Fd(), cookie.c_str(), cookie.length(), 0);
             ctx->log(2, std::string("[")+cookie+"]");
+        }
+        
     }
     if (!strcmp(req->Cmd(), "PUT")) {
+        send(req->Fd(), "\0", 1, 0);
         Cookie c(req->Host(), req->Data());
         if (c.path == NULL)
             c.path = strdup(req->Path());
@@ -288,18 +297,70 @@ void CookieJar::Run()
         }
 
         FD_ZERO(&readfd);
-        FD_SET(cookiefd, &readfd);
+        readfd = masterfd;
+        //FD_SET(cookiefd, &readfd);
         timeout.tv_sec = 3; // arbitrary
         timeout.tv_usec = 0; 
-        int i = select(cookiefd+1, &readfd, NULL, NULL, &timeout);
+        int i = select(maxfd+1, &readfd, NULL, NULL, &timeout);
 
         if (i < 0) {
             ctx->perror("select");
             continue;
         }
+
+        if (FD_ISSET(cookiefd, &readfd)) {
+            sockaddr_un addr;
+            memset(&addr, 0, sizeof(addr));
+            socklen_t addrlen = sizeof(addr);
+            int cfd = accept(cookiefd, (sockaddr*)&addr, &addrlen);
+            if (cfd < 0) {
+                ctx->perror("accept");
+                continue;
+            }
+            
+            FD_SET(cfd, &masterfd);
+            if (cfd > maxfd)
+                maxfd = cfd;
+            FD_CLR(cookiefd, &readfd);
+        }
+        
+        
+        for(int sfd = 0; sfd <= maxfd; sfd++) {
+            //printf("sfd %d/%d (%d) cookiefd: %d\n", sfd, maxfd, FD_ISSET(sfd, &readfd), cookiefd);
+            if (FD_ISSET(sfd, &readfd)) {
+                size_t bufSize = 1024*8 + 2;
+                char buf[bufSize];
+                // -2 to make sure there we can add two null bytes at the end
+                int ret = recv(sfd, buf, bufSize - 2, 0);
+                //printf("ret: %d\n", ret);
+                if (ret <= 0) {
+                    if (ret == 0)
+                        ctx->log(2, std::string("Client hung up"));
+                    else
+                        ctx->perror("recv");
+                    close(sfd);
+                    FD_CLR(sfd, &masterfd);
+                    continue;
+                }
+                buf[ret] = buf[ret + 1] = '\0';
+                
+                char** spl = nullsplit(buf);
+                
+                /*printf("buf: (%d) ", sizeof(spl));
+                for(int i = 0; spl[i]; i++)
+                    printf("[%s] ", spl[i]);
+                printf("\n");*/
+                
+                AddToQueue(sfd, spl);
+                
+                writetimer++;
+                needwrite = true;
+                strdelv(spl);
+            }
+        }
         
         if (!ctx->memory_mode) {
-            if (!FD_ISSET(cookiefd, &readfd) || writetimer > 100) { // arbitrary
+            if (writetimer > 100) { // arbitrary
                 if (needwrite) {
                     needwrite = false;
                     writetimer = 0;
@@ -310,41 +371,6 @@ void CookieJar::Run()
             }
         }
         
-        sockaddr_un addr;
-        memset(&addr, 0, sizeof(addr));
-        socklen_t addrlen = sizeof(addr);
-        int cfd = accept(cookiefd, (sockaddr*)&addr, &addrlen);
-        if (cfd < 0) {
-            ctx->perror("accept");
-            continue;
-        }
-        
-        size_t bufSize = 1024*8 + 2;
-        char buf[bufSize];
-        // -2 to make sure there we can add two null bytes at the end
-        int ret = recv(cfd, buf, bufSize - 2, 0);
-        if (ret <= 0) {
-            if (ret == 0)
-                ctx->log(2, std::string("Client hung up"));
-            else
-                ctx->perror("recv");
-            close(cfd);
-            continue;
-        }
-        buf[ret] = buf[ret + 1] = '\0';
-        
-        char** spl = nullsplit(buf);
-        
-        /*printf("buf: (%d) ", sizeof(spl));
-        for(int i = 0; spl[i]; i++)
-            printf("[%s] ", spl[i]);
-        printf("\n");*/
-        
-        AddToQueue(cfd, spl);
-        
-        writetimer++;
-        needwrite = true;
-        strdelv(spl);
     }
 }
 

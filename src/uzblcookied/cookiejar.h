@@ -28,6 +28,8 @@ class CookieJar {
     
         int cookiefd;
     
+        int maxfd;
+        fd_set masterfd;
         fd_set readfd;
         
         typedef bool (*cookiesorter)(const Cookie&, const Cookie&);
