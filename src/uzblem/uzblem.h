@@ -17,7 +17,7 @@
 #include "str.h"
 #include "plugin.h"
 
-const int BUFSIZE = 4096;
+const int BUFSIZE = 8192;
 
 class UzblEM {
     private:

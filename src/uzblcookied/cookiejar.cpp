@@ -285,8 +285,6 @@ void CookieJar::AddToQueue(int cfd, char** cookie)
 void CookieJar::Run()
 {
     timeval timeout;
-    
-    int writetimer = 0;
     bool needwrite = false;
     
     while (ctx->running) {
@@ -353,24 +351,18 @@ void CookieJar::Run()
                 
                 AddToQueue(sfd, spl);
                 
-                writetimer++;
                 needwrite = true;
                 strdelv(spl);
             }
         }
         
         if (!ctx->memory_mode) {
-            if (writetimer > 100) { // arbitrary
-                if (needwrite) {
-                    needwrite = false;
-                    writetimer = 0;
-                    ctx->log(1, std::string("Write request received. Trying to write cookies file."));
-                    WriteFile();
-                }
-                continue;
+            if (needwrite) {
+                needwrite = false;
+                ctx->log(1, std::string("Write request received. Trying to write cookies file."));
+                WriteFile();
             }
         }
-        
     }
 }
 
