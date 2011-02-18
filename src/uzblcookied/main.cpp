@@ -1,10 +1,12 @@
-#include "cookiejar.h"
-#include "context.h"
+#include <stdio.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <basedir.h>
 #include <unistd.h>
 #include <cstring>
+
+#include "cookiejar.h"
+#include "context.h"
 
 void help() {
     printf("Usage: uzblcookied [-vfmn]\n"
@@ -31,7 +33,7 @@ void sighandle(int a)
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     ctx = new Context(argc, argv);
 
@@ -54,7 +56,6 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Create pidfile and use it as lock */
     xdgHandle xdg;
     xdgInitHandle(&xdg);
     char pidfile[1024*4];
@@ -69,7 +70,7 @@ int main(int argc, char **argv)
     l.l_whence = SEEK_SET;
 
     if (fcntl(fd, F_SETLK, &l) == -1) {
-        std::cerr<<"Can't obtain lock. Probably uzblcookied is already started."<<std::endl;
+        printf("no lock (already running?)\n");
         exit(1);
     }
 
@@ -87,6 +88,7 @@ int main(int argc, char **argv)
     write(fd, pid, strlen(pid));
     fsync(fd);
 
+
     /* Register signal handler */
     struct sigaction sigact;
     sigact.sa_handler=sighandle;
@@ -95,7 +97,7 @@ int main(int argc, char **argv)
     if (sigaction(SIGUSR1, &sigact, NULL)) ctx->perror("sigaction");
     if (sigaction(SIGINT, &sigact, NULL)) ctx->perror("sigaction");
     if (sigaction(SIGTERM, &sigact, NULL)) ctx->perror("sigaction");
-    
+
     CookieJar* cookiejar = new CookieJar(ctx);
     
     cookiejar->Run();

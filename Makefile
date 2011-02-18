@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -ggdb `pkg-config --cflags gtk+-2.0 --cflags libxdg-basedir`
-LDFLAGS = `pkg-config --libs gtk+-2.0`
+LDFLAGS = `pkg-config --libs gtk+-2.0 libxdg-basedir`
 
 
 all: uzbltab uzblem uzbltreetab uzblcookied
@@ -20,7 +20,7 @@ EMOBJ = $(EMSRC:.cpp=.o)
 $(EMOBJ): $(wildcard $(dir)/*.h)
 
 uzblem: $(EMOBJ)
-	$(CXX) -o $@ $(EMOBJ)
+	$(CXX) -o $@ $(EMOBJ) $(LDFLAGS)
 
 TREESRC = $(wildcard src/uzbltreetab/*.cpp)
 TREEOBJ = $(TREESRC:.cpp=.o)

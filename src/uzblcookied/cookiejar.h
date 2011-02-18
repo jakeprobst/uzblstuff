@@ -17,27 +17,29 @@
 #include <basedir.h>
 
 #include "context.h"
-#include "cookierequest.h"
+//#include "cookierequest.h"
 #include "cookie.h"
 
 class CookieJar {
     private:
         xdgHandle xdg;
-        
         Context* ctx;
+        bool needwrite;
     
         int cookiefd;
     
         int maxfd;
         fd_set masterfd;
         fd_set readfd;
-        
+       
+
+
         typedef bool (*cookiesorter)(const Cookie&, const Cookie&);
         typedef std::set<Cookie, cookiesorter> cookieSet;
         cookieSet cookies;
         
-        void AddToQueue(int, char**);
-        void HandleCookie(CookieRequest*);
+        void AddToQueue(int, char*);
+        void HandleCookie(Cookie);
         
         bool IsInWhitelist(const Cookie&);
         void RemoveDuplicates();

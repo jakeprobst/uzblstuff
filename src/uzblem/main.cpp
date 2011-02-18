@@ -6,12 +6,13 @@
 
 int main(int argc, char** argv)
 {
-    if (argc != 2) {
+    /*if (argc != 2) {
         printf("usage: %s <socket>\n", argv[0]);
         return 0;
-    }
+    }*/
     
     UzblEM* uzblem = new UzblEM(argv[1]);
+    //UzblEM* uzblem = new UzblEM();
     uzblem->Run();
     delete uzblem;
     //UzblEM uzblem = UzblEM(argv[1]);

@@ -7,7 +7,7 @@
 
 class Cookie {
     public:
-        //std::map<char*, char*> variables;
+        char* data;
         unsigned int expires;
         bool secure;
         char* domain;

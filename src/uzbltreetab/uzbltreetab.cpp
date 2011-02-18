@@ -181,8 +181,8 @@ void UzblTreeTab::LoadSession()
                 sscanf(sbuf, "%[^\t]\t%d", url, &child);
                 
                 NewTab(url, child, false);
-                //usleep(8000);
-                sleep(1);
+                usleep(200000);
+                //sleep(1);
             }
             
             memset(sbuf, 0, FIFOSIZE);

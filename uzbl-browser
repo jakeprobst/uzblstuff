@@ -19,10 +19,20 @@ fi
 # $4: path to the uzbltreetab fifo
 # $5: the url to open
 
+#DAEMON_SOCKET="$XDG_CACHE_HOME"/uzbl/event_daemon
+#$XDG_CONFIG_HOME/uzbl/scripts/uzbl-event-manager -va start
+
+#cookie daemon socket
+CDS=$XDG_CACHE_HOME/uzbl/cookie_daemon_socket
+
+
+
+
 if [ "$1" = "tab" ]; then
     EMFIFO="/tmp/uzbl_em_$3"
     /home/jake/projects/uzblstuff/uzblem $EMFIFO
-    uzbl-core -s $2 --connect-socket $EMFIFO -n $3 "$5" &
+    uzbl-core -s $2 --connect-socket $EMFIFO --connect-socket $CDS -n $3 "$5" &
+    #uzbl-core -s $2 --connect-socket $EMFIFO -n $3 "$5" &
     until [ -p /tmp/uzbl_fifo_$3 ]; do
         sleep .1
     done
@@ -32,6 +42,7 @@ else
     SOCKID="$RANDOM$RANDOM"
     SOCKPATH="/tmp/uzbl_socket_$SOCKID"
     /home/jake/projects/uzblstuff/uzblem $SOCKPATH
-    uzbl-core --connect-socket $SOCKPATH "$1" -pv | grep -v PTR_MOVE
+    uzbl-core --connect-socket $SOCKPATH --connect-socket $CDS "$1" -pv | grep -v PTR_MOVE
+    #uzbl-core --connect-socket $SOCKPATH "$1" -pv | grep -v PTR_MOVE
 fi
 

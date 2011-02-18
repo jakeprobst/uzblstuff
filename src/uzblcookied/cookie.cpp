@@ -21,9 +21,11 @@ bool cookiesort(const Cookie& a, const Cookie& b)
     // These properties aren't compared: value, secure, expires
     return false;
 }
+//EVENT [142606374] ADD_COOKIE '.google.com' '/' 'PREF' 'ID=47cab6979f111161:FF=0:TM=1297855198:LM=1297855198:S=YJBY6mREZvB_79qm' 'http' '1360927198'
 
 Cookie::Cookie(const Cookie& other)
 {
+    data = strdup(other.data);
     expires = other.expires;
     secure = other.secure;
     domain = strdup(other.domain);
@@ -32,43 +34,42 @@ Cookie::Cookie(const Cookie& other)
     value = strdup(other.value);
 }
 
-Cookie::Cookie(const char* data)
+Cookie::Cookie(const char* d)
 {
+    char name[512];
     char tdomain[512];
     char tbleh[32];
     char tpath[512];
     char tsecure[32];
-    char texpires[32];
+    int texpires;
     char tkey[1024*4];
     char tvalue[1024*4];
+
+    sscanf(d, "'%[^']' '%[^']' '%[^']' '%[^']' '%[^']' '%d'",
+            tdomain, tpath, tkey, tvalue, tsecure, &texpires);
+    /*printf("cookie:\n");
+    printf("  data: [%s]\n", d);
+    printf("  domain: %s\n", tdomain);
+    printf("  path: %s\n", tpath);
+    printf("  key: %s\n", tkey);
+    printf("  value: %s\n", tvalue);
+    printf("  sec: %s\n", tsecure);
+    printf("  exp: %d\n", texpires);*/
     
-    memset(tvalue, 0, 1024*4);
-    sscanf(data, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]", 
-                        tdomain, tbleh, tpath, tsecure, texpires, tkey, tvalue);
-                        
-    // sscanf ignores the expire slot if it is empty and messes everything up
-    if (strlen(tvalue) == 0) {
-        strcpy(tvalue, tkey);
-        strcpy(tkey, texpires);
-        memset(texpires, 0, 32);
-        texpires[0] = '0'; // zero, not null
-    }
-    
+    data = strdup(d);
     domain = strdup(tdomain);
     path = strdup(tpath);
     secure = false;
-    if (!strcmp(tsecure, "TRUE"))
+    if (!strcmp(tsecure, "https"))
         secure = true;
-    expires = 0;
-    if (strlen(texpires))
-        sscanf(texpires, "%d", &expires);
+    expires = texpires;
     key = strdup(tkey);
     value = strdup(tvalue);
 }
 
 Cookie::Cookie(const char* host, const char* data)
 {
-    domain = strdup(host);
+    /*domain = strdup(host);
     expires = 0;
     secure = false;
     path = NULL;
@@ -104,27 +105,6 @@ Cookie::Cookie(const char* host, const char* data)
             strncpy(v, vars[i]+epos+1, strlen(vars[i])-epos+o);
         }
         
-        //printf("k, v: [%s, %s]\n", k, v);
-        
-        /*char** item = strsplit(vars[i]+o, '=');
-        if (item[2] != NULL) {
-            k = strdup(item[0]);
-            v = strjoin("=", item+1);
-        }
-        else if (item[1] == NULL){
-            k = strdup(item[0]);
-            v = new char[2];
-            v[0] = '\0';
-        }
-        else {
-            k = strdup(item[0]);
-            v = strdup(item[1]);
-        }
-        strdelv(item);*/
-        
-        /*if (item[0]  == NULL || item[1] == NULL)
-            continue;*/
-        
         if (!strcmp(k, "domain")) {
             if (domain) {
                 free(domain);
@@ -150,17 +130,14 @@ Cookie::Cookie(const char* host, const char* data)
         
         delete[] k;
         delete[] v;
-        //strdelv(item);
     }
     
-    strdelv(vars);
-    
-    //if (path == NULL)
-    //    path = strdup("/");
+    strdelv(vars);*/
 }
 
 Cookie::~Cookie()
 {
+    free(data);
     free(domain);
     free(path);
     free(key);

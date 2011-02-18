@@ -4,6 +4,7 @@
 #include <fstream>
 
 //extern Context *ctx;
+const size_t BUFSIZE = 1024*8 + 2;
 
 const char* SOCKETFILE = "uzbl/cookie_daemon_socket";
 
@@ -24,27 +25,21 @@ CookieJar::CookieJar(Context* c)
 
     ctx = c;
 
-    cookiefd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-    //printf("socket: %s\n", strerror(errno));
+    cookiefd = socket(AF_UNIX, SOCK_STREAM, 0);
 
     sockaddr_un addr;
     addr.sun_family = AF_UNIX;
     sprintf(addr.sun_path, "%s/%s", xdgCacheHome(&xdg), SOCKETFILE);
     
     unlink(addr.sun_path);
-    //printf("path: %s\n", addr.sun_path);
     
     bind(cookiefd, (sockaddr*)&addr, sizeof(addr));
-    //printf("bind: %s\n", strerror(errno));
-    
     listen(cookiefd, 10);
-    //printf("listen: %s\n", strerror(errno));
     
     maxfd = cookiefd;
     FD_ZERO(&masterfd);
     FD_SET(cookiefd, &masterfd);
     
-
     LoadFile();
 }
 
@@ -149,10 +144,6 @@ void CookieJar::WriteFile()
     }
 
     // as a note, that link isn`t actually valid anymore.
-    file <<   "    # Netscape HTTP Cookie File\n" \
-              "    # http://www.netscape.com/newsref/std/cookie_spec.html\n" \
-              "    # This is a generated file!  Do not edit.\n\n";
-
     int t = time(NULL);
     
     cookieSet::iterator iter;
@@ -188,104 +179,56 @@ void CookieJar::WriteFile()
             if (!ok)
                 continue;
         }
-        
-        file << c.domain << "\t";
-        if (c.domain[0] == '.')
-            file << "TRUE\t";
-        else
-            file << "FALSE\t";
-        file << c.path << "\t";
-        if (c.secure == true)
-            file << "TRUE\t";
-        else
-            file << "FALSE\t";
-        if (c.expires != 0)
-            file << c.expires;
-        file << "\t";
-        file << c.key << "\t" << c.value << "\n";
+
+        file << c.data << "\n";
     }
     ctx->log(1, "Cookies file wrote.");
 }
 
-void CookieJar::HandleCookie(CookieRequest* req)
+void CookieJar::HandleCookie(Cookie req)
 {
-    if (!strcmp(req->Cmd(), "GET")) {
-        std::string cookie;
-        ctx->log(2, std::string("GET ")+req->Host()+req->Path());
-        char domain[1024];
-        sprintf(domain, ".%s", req->Host());
-        
-        int t = time(NULL);
-        
-        cookieSet::iterator iter;
-        for(iter = cookies.begin(); iter != cookies.end(); iter++) {
-            const Cookie& c = *iter;
-            
-            if(!endswith(domain, c.domain))
-                continue;
-            if(!startswith(req->Path(), c.path))
-                continue;
-            if (c.expires < t && c.expires != 0)
-                continue;
-
-            cookie += c.key;
-            cookie += "=";
-            cookie += c.value;
-            cookie += "; ";
+    for(int i = 0; i < maxfd; i++) {
+        if (FD_ISSET(i, &masterfd)) {
+            if (!IsInWhitelist(req)) {
+                return;
+            }
+            char b[BUFSIZE];
+            sprintf(b, "add_cookie %s\n", req.data);
+            send(i, b, strlen(b), 0);
         }
-
-        // Strip away the last "; "
-        if (cookie.empty()) {
-            send(req->Fd(), "\0", 1, 0);
-        }
-        else {
-            cookie = cookie.substr(0, cookie.length() - 2);
-            send(req->Fd(), cookie.c_str(), cookie.length(), 0);
-            ctx->log(2, std::string("[")+cookie+"]");
-        }
-        
     }
-    if (!strcmp(req->Cmd(), "PUT")) {
-        send(req->Fd(), "\0", 1, 0);
-        Cookie c(req->Host(), req->Data());
-        if (c.path == NULL)
-            c.path = strdup(req->Path());
-        if (!IsInWhitelist(c)) {
-            ctx->log(2, std::string("NOTPUT ")+req->Host()+req->Path()+": "+req->Data());
-            return;
-        }
 
-        ctx->log(2, std::string("PUT ")+req->Host()+req->Path()+": "+req->Data());
-
-        std::pair<cookieSet::iterator, bool> res = cookies.insert(c);
-        if (!res.second) {
-            // There was already another cookie with is equal to this one,
-            // remove the other one and then insert again.
-            // If this new cookie is already expired, the normal expiry machine
-            // will kick in and remove it later on.
-            cookies.erase(res.first);
-            cookies.insert(c);
-        }
+    std::pair<cookieSet::iterator, bool> res = cookies.insert(req);
+    if (!res.second) {
+        // There was already another cookie with is equal to this one,
+        // remove the other one and then insert again.
+        // If this new cookie is already expired, the normal expiry machine
+        // will kick in and remove it later on.
+        cookies.erase(res.first);
+        cookies.insert(req);
     }
 }
 
 
-void CookieJar::AddToQueue(int cfd, char** cookie)
+void CookieJar::AddToQueue(int cfd, char* cookie)
 {
-    if (strlenv(cookie) < 4)
-        return;
-    
-    CookieRequest* c = new CookieRequest(cfd, cookie);
-    
-    HandleCookie(c);
-    
-    delete c;
+    int l = 0, i = 0;;
+    for(i = 0; l < 2; i++) {
+        if (cookie[i] == ' ')
+            l++;
+    }
+    if (strncmp(cookie+i, "ADD_COOKIE", 10) == 0) {
+        if (cookie[strlen(cookie)-1] == '\n')
+            cookie[strlen(cookie)-1] = '\0';
+        Cookie c(cookie+i+strlen("ADD_COOKIE "));
+        HandleCookie(c);
+        needwrite = true;
+    }
 }
 
 void CookieJar::Run()
 {
     timeval timeout;
-    bool needwrite = false;
     
     while (ctx->running) {
         if (ctx->writerequest) {
@@ -296,7 +239,6 @@ void CookieJar::Run()
 
         FD_ZERO(&readfd);
         readfd = masterfd;
-        //FD_SET(cookiefd, &readfd);
         timeout.tv_sec = 3; // arbitrary
         timeout.tv_usec = 0; 
         int i = select(maxfd+1, &readfd, NULL, NULL, &timeout);
@@ -315,22 +257,18 @@ void CookieJar::Run()
                 ctx->perror("accept");
                 continue;
             }
-            
+
             FD_SET(cfd, &masterfd);
             if (cfd > maxfd)
                 maxfd = cfd;
             FD_CLR(cookiefd, &readfd);
         }
         
-        
         for(int sfd = 0; sfd <= maxfd; sfd++) {
-            //printf("sfd %d/%d (%d) cookiefd: %d\n", sfd, maxfd, FD_ISSET(sfd, &readfd), cookiefd);
             if (FD_ISSET(sfd, &readfd)) {
-                size_t bufSize = 1024*8 + 2;
-                char buf[bufSize];
-                // -2 to make sure there we can add two null bytes at the end
-                int ret = recv(sfd, buf, bufSize - 2, 0);
-                //printf("ret: %d\n", ret);
+                char buf[BUFSIZE];
+                memset(buf, 0, BUFSIZE);
+                int ret = recv(sfd, buf, BUFSIZE, 0);
                 if (ret <= 0) {
                     if (ret == 0)
                         ctx->log(2, std::string("Client hung up"));
@@ -340,18 +278,12 @@ void CookieJar::Run()
                     FD_CLR(sfd, &masterfd);
                     continue;
                 }
-                buf[ret] = buf[ret + 1] = '\0';
                 
-                char** spl = nullsplit(buf);
+                char** spl = strsplit(buf, '\n');
                 
-                /*printf("buf: (%d) ", sizeof(spl));
                 for(int i = 0; spl[i]; i++)
-                    printf("[%s] ", spl[i]);
-                printf("\n");*/
+                    AddToQueue(sfd, spl[i]);
                 
-                AddToQueue(sfd, spl);
-                
-                needwrite = true;
                 strdelv(spl);
             }
         }
@@ -359,9 +291,10 @@ void CookieJar::Run()
         if (!ctx->memory_mode) {
             if (needwrite) {
                 needwrite = false;
-                ctx->log(1, std::string("Write request received. Trying to write cookies file."));
+                ctx->log(1, std::string("Write request received. Trying to write"));
                 WriteFile();
             }
+            continue;
         }
     }
 }
