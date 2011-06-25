@@ -13,8 +13,9 @@ OnEvent::OnEvent(UzblEM* e)
 OnEvent::~OnEvent()
 {
     vector<EventCallback*>::iterator iter;
-    for(iter = events.begin(); iter != events.end(); iter++)
+    for(iter = events.begin(); iter != events.end(); iter++) {
         delete *iter;
+    }
 }
 
 
@@ -38,10 +39,10 @@ void OnEvent::CheckEvents(char** cmd)
     for(iter = events.begin(); iter != events.end(); iter++) {
         if ((*iter)->Match(cmd[0])) {
             if (cmd[1] && strcontains((*iter)->GetCmd(), "%s")) {
-                char* arg = strjoin(" ", cmd+1);
-                char* c = strreplace((*iter)->GetCmd(), "%s", arg, -1);
+                //char* arg = strjoin(" ", cmd+1);
+                char* c = strreplace((*iter)->GetCmd(), "%s", cmd[1], -1);
                 em->SendCommand(c);
-                delete[] arg;
+                //delete[] arg;
                 delete[] c;
             }
             else {

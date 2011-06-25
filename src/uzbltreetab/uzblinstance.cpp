@@ -29,7 +29,7 @@ UzblInstance::UzblInstance(const char* u, const char* mainfifo, GtkNotebook* n, 
     int rn = rand();
     sprintf(name, "%d", rn &0x7FFFFFFF);
 
-    char cmd[1024];
+    char cmd[1024*4];
     sprintf(cmd, "uzbl-browser tab %d %s %s \"%s\"",
                  gtk_socket_get_id(socket), name, mainfifo, u);
     

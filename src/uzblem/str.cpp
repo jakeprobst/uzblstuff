@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-char** strsplit(const char* str, char delim)
+/*char** strsplit(const char* str, char delim)
 {
     int len = strlen(str);
     char** out;
@@ -37,7 +37,7 @@ char** strsplit(const char* str, char delim)
             break;
         }
         if (str[i-1] == delim) {
-            if (str[i] == delim/* || start - lstart == 1*/) {
+            if (str[i] == delim/* || start - lstart == 1* /) {
                 start++;
                 spaceoff++;
                 continue;
@@ -56,7 +56,82 @@ char** strsplit(const char* str, char delim)
     }
     
     return out;
+}*/
+
+
+char** strsplit(const char* str, const char delim)
+{
+    int len = strlen(str);
+    char** out = NULL;
+
+    int itemnum = 2;
+    int inquote = -1;
+    bool inspace = false;
+    for(int i = 0; i < len; i++) {
+        if (str[i] == '\'' && str[i-1] != '\\') {
+            inquote *= -1;
+            if (inquote < 0)
+                itemnum++;
+        }
+        else if (str[i] == delim && inquote < 0) {
+            if (inspace)
+                continue;
+            inspace = true;
+            itemnum++;
+        }
+        else {
+            inspace = false;
+        }
+    }
+
+    out = new char*[itemnum+1];
+    for(int i = 0; i < itemnum; i++) {
+        out[i] = new char[len];
+        memset(out[i], 0, len);
+    }
+    out[itemnum] = NULL;
+
+    inquote = -1;
+    inspace = false;
+    int oindex = 0;
+    int bindex[itemnum];
+    for(int i = 0; i < itemnum; i++)
+        bindex[i] = 0;
+    for(int i = 0; i < len; i++) {
+        if (str[i] == '\\' && str[i+1] == '\\') {
+            out[oindex][bindex[oindex]] = str[i];
+            bindex[oindex]++;
+            inspace = false;
+            //i++;
+        }
+        else if (str[i] == '\\' && str[i+1] == '\'') {
+            i++;
+        }
+        else if (str[i] == '\'') {
+            inquote *= -1;
+            if (inquote < 0 && bindex[oindex] == 0)
+                oindex++;
+        }
+        else if (str[i] == delim && inquote < 0) {
+            if (inspace)
+                continue;
+            inspace = true;
+            oindex++;
+        }
+        else {
+            out[oindex][bindex[oindex]] = str[i];
+            bindex[oindex]++;
+            inspace = false;
+        }
+    }
+
+    return out;
 }
+
+
+
+
+
 
 void strdelv(char** s)
 {

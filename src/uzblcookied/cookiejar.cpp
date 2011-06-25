@@ -187,7 +187,7 @@ void CookieJar::WriteFile()
 
 void CookieJar::HandleCookie(Cookie req)
 {
-    for(int i = 0; i < maxfd; i++) {
+    /*for(int i = 0; i < maxfd; i++) {
         if (FD_ISSET(i, &masterfd)) {
             if (!IsInWhitelist(req)) {
                 return;
@@ -196,17 +196,27 @@ void CookieJar::HandleCookie(Cookie req)
             sprintf(b, "add_cookie %s\n", req.data);
             send(i, b, strlen(b), 0);
         }
+    }*/
+
+
+    if (!IsInWhitelist(req)) {
+        printf("DENY:  ");
+    }
+    else {
+        std::pair<cookieSet::iterator, bool> res = cookies.insert(req);
+        if (!res.second) {
+            // There was already another cookie with is equal to this one,
+            // remove the other one and then insert again.
+            // If this new cookie is already expired, the normal expiry machine
+            // will kick in and remove it later on.
+            cookies.erase(res.first);
+            cookies.insert(req);
+        }
+        printf("ALLOW: ");
     }
 
-    std::pair<cookieSet::iterator, bool> res = cookies.insert(req);
-    if (!res.second) {
-        // There was already another cookie with is equal to this one,
-        // remove the other one and then insert again.
-        // If this new cookie is already expired, the normal expiry machine
-        // will kick in and remove it later on.
-        cookies.erase(res.first);
-        cookies.insert(req);
-    }
+    printf("[%s] %s:%s\n",req.domain, req.key, req.value);
+
 }
 
 

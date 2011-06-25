@@ -17,6 +17,7 @@ class EventCallback {
         
         bool Match(char* e) {return !strcmp(event, e);};
         char* GetCmd() {return cmd;};
+        char* GetEvt() {return event;};
 };
 
 

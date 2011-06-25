@@ -12,7 +12,7 @@ Bind::Bind(UzblEM* e)
     kindex = 0;
     kselect = 0;
     input = true;
-    memset(modcmd, 0, 256);
+    //memset(modcmd, 0, 256);
     memset(keycmd, 0, 1024);
 }
 
@@ -24,7 +24,10 @@ Bind::~Bind()
     }
     vector<char*>::iterator iter2;
     for(iter2 = ignore.begin(); iter2 != ignore.end(); iter2++) {
-        delete[] *iter;
+        delete[] *iter2;
+    }
+    for(iter2 = modkeys.begin(); iter2 != modkeys.end(); iter2++) {
+        delete[] *iter2;
     }
 }
 
@@ -57,23 +60,30 @@ void Bind::ModeChange(char** cmd)
 void Bind::SetKeyCmd()
 {
     char c[1024];
+    char k[1024];
     memset(c, 0, 1024);
+    memset(k, 0, 1024);
     
-    if (strlen(modcmd) == 0) {
-        if (keycmd[kselect]) {
-            char pre[strlen(keycmd)];
-            strncpy(pre, keycmd, strlen(keycmd));
-            pre[kselect] = '\0';
-            
-            sprintf(c, "set keycmd = @[%s]@<span @cursor_style>@[%c]@</span>@[%s]@\n", pre, keycmd[kselect], keycmd+kselect+1);
-        }
-        else {
-            sprintf(c, "set keycmd = @[%s]@\n", keycmd);
-        }
+    if (keycmd[kselect]) {
+        char pre[strlen(keycmd)];
+        strncpy(pre, keycmd, strlen(keycmd));
+        pre[kselect] = '\0';
+        
+        sprintf(k, "@[%s]@<span @cursor_style>@[%c]@</span>@[%s]@\n", pre, keycmd[kselect], keycmd+kselect+1);
     }
     else {
-        sprintf(c, "set keycmd = @[%s%s]@\n", modcmd, keycmd);
+        sprintf(k, "@[%s]@\n", keycmd);
     }
+
+   
+    strncat(c, "set keycmd = ", 1024);
+    vector<char*>::iterator iter;
+    for(iter = modkeys.begin(); iter != modkeys.end(); iter++) {
+        strncat(c, "@[",1024);
+        strncat(c, *iter,1024);
+        strncat(c, "]@",1024);
+    }
+    strncat(c, k, 1024);
     
     char* c2  = strreplace(c, "\\", "\\\\", -1);
 
@@ -89,7 +99,7 @@ void Bind::TryAndExec()
         if ((*iter)->IsArg()) {
             char* key = (*iter)->GetKey();
             bool exec = false;
-            
+           
             int len = charat(keycmd, ' ');
             if (!strncmp(key, keycmd, len) && strlen(key) == len)
                 exec = true;
@@ -99,13 +109,13 @@ void Bind::TryAndExec()
             if (exec) {
                 char* cmd = strreplace((*iter)->GetCmd(), "%s", 
                                        keycmd+strlen(key)+(*iter)->IsSpace(), 1);
-                //printf("cmd: %s\n", cmd);
                 em->SendCommand(cmd);
                 
                 delete[] cmd; 
                 memset(keycmd, 0, 1024);
                 kindex = 0;
                 kselect = 0;
+                SetKeyCmd();
             }
         }
     }
@@ -161,6 +171,8 @@ void Bind::EventBind(char** cmd, bool mkb)
     }
     value[strlen(value)-1] = '\0';
     
+    printf("bind: [%s] -> [%s] %d/%d\n", key, value, arg, space);
+
     Binding* b;
     b = new Binding(key, value, arg, space, mkb);
     
@@ -169,34 +181,33 @@ void Bind::EventBind(char** cmd, bool mkb)
 
 void Bind::EventKeyPress(char** cmd)
 {
+    printf("cmd: [%s] [%s] [%s] [%s]\n", cmd[0], cmd[1], cmd[2], cmd[3]);
+    
     if (input == false)
         return;
     for(int i = 0; i < exec.size(); i++) {
-        if (!strcmp(cmd[1], exec[i])) {
+        if (!strcmp(cmd[2], exec[i])) {
             TryAndExec();
             return;
         }
     }
-    if (!strcmp(cmd[1], "Escape")) {
+    if (!strcmp(cmd[2], "Escape")) {
         memset(keycmd, 0, 1024);
-        memset(modcmd, 0, 256);
+        modkeys.clear();
         kindex = 0;
         kselect = 0;
     }
-    else if (!strcmp(cmd[1], "Shift_R") || !strcmp(cmd[1], "Shift_L")) {
-        // nothing!
-    }
-    else if (!strcmp(cmd[1], "Left")) {
+    else if (!strcmp(cmd[2], "Left")) {
         kselect--;
         if (kselect < 0)
             kselect = 0;
     }
-    else if (!strcmp(cmd[1], "Right")) {
+    else if (!strcmp(cmd[2], "Right")) {
         kselect++;
         if (kselect > kindex)
             kselect = kindex;
     }
-    else if (!strcmp(cmd[1], "BackSpace")) {
+    else if (!strcmp(cmd[2], "BackSpace")) {
         if (kselect > 0) {
             for(int i = kselect; i < kindex; i++) {
                 keycmd[i-1] = keycmd[i];
@@ -206,7 +217,7 @@ void Bind::EventKeyPress(char** cmd)
             kselect--;
         }
     }
-    else if (!strcmp(cmd[1], "Delete")) {
+    else if (!strcmp(cmd[2], "Delete")) {
         if (keycmd[kselect] == '\0')
             return;
         for(int i = kselect; i < kindex; i++) {
@@ -215,7 +226,7 @@ void Bind::EventKeyPress(char** cmd)
         keycmd[kindex] = '\0';
         kindex--;
     }
-    else if (!strcmp(cmd[1], "space")) { // why is this lowercase?
+    else if (!strcmp(cmd[2], "space")) { // why is this lowercase?
         if (kindex == 0)
             return;
         for(int i = kindex; i != kselect-1; i--) {
@@ -225,33 +236,33 @@ void Bind::EventKeyPress(char** cmd)
         kindex++;
         kselect++;
     }
-    else if (strlen(cmd[1]) != 1) {
-        char* mk = FixModkey(cmd[1]);
-        int len = strlen(mk);
-        
-        if (strcontains(modcmd, mk)) {
-            delete[] mk;
-            return;
-        }
+    else if (strlen(cmd[2]) != 1) {
+        char* mk = FixModkey(cmd[2]);
+        char* c = new char[strlen(mk)+3];
+        sprintf(c, "<%s>", mk);
+        delete[] mk;
         
         vector<char*>::iterator iter;
-        for(iter = ignore.begin(); iter != ignore.end(); iter++) {
-            if (!strncmp((*iter)+1, mk, strlen(mk))) { // +1 = < // +4 = &lt;
-                delete[] mk;
+        for(iter = modkeys.begin(); iter != modkeys.end(); iter++) {
+            if (!strcmp((*iter), c)) {
+                delete[] c;
                 return;
             }
         }
-        
-        strncat(modcmd, "<", 1);
-        strncat(modcmd, mk, len);
-        strncat(modcmd, ">", 1);
-        
-        delete[] mk;
+
+        for(iter = ignore.begin(); iter != ignore.end(); iter++) {
+            if (!strncmp((*iter), c, strlen(c))) {
+                delete[] c;
+                return;
+            }
+        }
+
+        modkeys.push_back(c);
     }
     else {
         vector<char*>::iterator iter;
         for(iter = ignore.begin(); iter != ignore.end(); iter++) {
-            if (strcmp((*iter), cmd[1]) == 0) {
+            if (strcmp((*iter), cmd[2]) == 0) {
                 return;
             }
         }
@@ -259,56 +270,63 @@ void Bind::EventKeyPress(char** cmd)
         for(int i = kindex; i != kselect-1; i--) {
             keycmd[i+1] = keycmd[i];
         }
-        keycmd[kselect] = cmd[1][0];
+        keycmd[kselect] = cmd[2][0];
         kindex++;
         kselect++;
     }
-        
+
     char kc[1024];
-    sprintf(kc, "%s%s", modcmd, keycmd);
-    
+    memset(kc, 0, 1024);
+    vector<char*>::iterator kiter;
+    for(kiter = modkeys.begin(); kiter != modkeys.end(); kiter++) {
+        strncat(kc, *kiter, 1024);
+    }
+    if (strlen(keycmd))
+        strncat(kc, keycmd, 1024);
+
     vector<Binding*>::iterator iter;
     for(iter = bindings.begin(); iter != bindings.end(); iter++) {
         if ((*iter)->Match(kc)) {
             if (!(*iter)->IsArg()) {
+                printf("sending: %s\n", (*iter)->GetCmd());
                 em->SendCommand((*iter)->GetCmd());
                 
-                memset(modcmd, 0, 256);
+                modkeys.clear();
                 memset(keycmd, 0, 1024);
                 kindex = 0;
                 kselect = 0;
             }
         }
         else if ((*iter)->IsModkeyBind()) {
-            if (!strcmp((*iter)->GetKey(), modcmd)) {
+            if (modkeys.size() > 0 && !strcmp((*iter)->GetKey(), modkeys[0])) {
                 em->SendCommand((*iter)->GetCmd());
-                memset(modcmd, 0, 256);
+                modkeys.clear();
             }
         }
     }
-    
+
+
     SetKeyCmd();
 }
 
 
 void Bind::EventKeyRelease(char** cmd)
 {   
-    if (strlen(cmd[1]) <= 1)
+    if (strlen(cmd[2]) <= 1)
         return;
     
-    char* mk = FixModkey(cmd[1]);
-    char mk2[256];
-        
-    sprintf(mk2, "<%s>", mk);
-    char* s = strreplace(modcmd, mk2, "", -1);
-    
-    memset(modcmd, 0, 256);
-    strcpy(modcmd, s);
-    
+    char* mk = FixModkey(cmd[2]);
+
+    vector<char*>::iterator iter;
+    for(iter = modkeys.begin(); iter != modkeys.end(); iter++) {
+        if (!strncmp((*iter)+1, mk, strlen(*iter))-1) {
+            delete[] *iter;
+            modkeys.erase(iter);
+            break;
+        }
+    }
     SetKeyCmd();
-    
     delete[] mk;
-    delete[] s;
 }
 
 void Bind::EventIgnoreKey(char** cmd)
@@ -318,13 +336,14 @@ void Bind::EventIgnoreKey(char** cmd)
 
 void Bind::EventExecKey(char** cmd)
 {
-    //printf("exec added: %s\n", cmd[1]);
     exec.push_back(strdup(cmd[1]));
 }
 
 void Bind::EventKeycmdInsert(char** cmd)
 {
     char* str = strjoin(" ", cmd+1);
+
+    //char* str = cmd[1];
     int len = strlen(str);
     
     char kcmd[1024];
@@ -338,7 +357,6 @@ void Bind::EventKeycmdInsert(char** cmd)
     kindex += len;
     kselect += len;
     delete[] str;
-    
 }
 
 

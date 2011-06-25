@@ -32,7 +32,6 @@ if [ "$1" = "tab" ]; then
     EMFIFO="/tmp/uzbl_em_$3"
     /home/jake/projects/uzblstuff/uzblem $EMFIFO
     uzbl-core -s $2 --connect-socket $EMFIFO --connect-socket $CDS -n $3 "$5" &
-    #uzbl-core -s $2 --connect-socket $EMFIFO -n $3 "$5" &
     until [ -p /tmp/uzbl_fifo_$3 ]; do
         sleep .1
     done
@@ -42,7 +41,7 @@ else
     SOCKID="$RANDOM$RANDOM"
     SOCKPATH="/tmp/uzbl_socket_$SOCKID"
     /home/jake/projects/uzblstuff/uzblem $SOCKPATH
-    uzbl-core --connect-socket $SOCKPATH --connect-socket $CDS "$1" -pv | grep -v PTR_MOVE
-    #uzbl-core --connect-socket $SOCKPATH "$1" -pv | grep -v PTR_MOVE
+    uzbl-core --connect-socket $SOCKPATH --connect-socket $CDS "$1" -pv | grep -v PTR_MOVE | grep -vi cookie
+    #uzbl-core --connect-socket $SOCKPATH --connect-socket $CDS "$1" -pv | grep -v PTR_MOVE
 fi
 

@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 UzblEM::UzblEM(char* sock)
 {
     unlink(sock);
@@ -24,16 +25,18 @@ UzblEM::UzblEM(char* sock)
     
     bind(servfd, (sockaddr*)&local, len);
     listen(servfd, 0);
-    
-    switch (fork()) {
-        case 0:
-            
-            break;
-        case -1:
-            perror("fork");
-            exit(1);
-        default:
-            exit(0);
+   
+    // too lazy to do something proper for when I debug
+    if (sock[0] == '/') {
+        switch (fork()) {
+            case 0:
+                break;
+            case -1:
+                perror("fork");
+                exit(1);
+            default:
+                exit(0);
+        }
     }
     
     
@@ -89,14 +92,18 @@ void UzblEM::EventHandler(char** cmd)
 
 void UzblEM::Command(char* c)
 {
+    if (strlen(c) == 0)
+        return;
+
+    //printf("c: %s\n", c);
+
     char** cmd = strsplit(c, ' ');
-    
-    
+
     if (!name) {
         name = new char[strlen(cmd[1])];
         sscanf(cmd[1], "[%[^]]]", name);
     }
-    
+
     if (!strcmp(cmd[0], "EVENT")) {
         EventHandler(cmd+2);
     }
@@ -127,7 +134,7 @@ void UzblEM::Run()
         if (r == 0)
             return;
         
-        if (sbuf[sb] == '\n') {
+        if (sbuf[sb] == '\n' || sb >= BUFSIZE) {
             sbuf[sb] = '\0';
             Command(sbuf);
             memset(sbuf, 0, BUFSIZE);

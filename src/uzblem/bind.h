@@ -37,12 +37,13 @@ class Bind : public Plugin {
         int kselect;
         int kindex;
         bool input;
-        char modcmd[256];
+        //char modcmd[256];
         char keycmd[1024];
         
         std::vector<Binding*> bindings;
         std::vector<char*> ignore;
         std::vector<char*> exec;
+        std::vector<char*> modkeys;
         
         char* FixModkey(char*);
         

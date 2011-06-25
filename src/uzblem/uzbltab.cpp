@@ -16,8 +16,8 @@ UzblTab::~UzblTab()
 void UzblTab::TitleChanged(char** cmd)
 {
     char s[1024];
-    char* t = strjoin(" ", cmd+1);
-    sprintf(s, "tabtitle %s %s\n", em->GetName(), t);
+    //char* t = strjoin(" ", cmd+1);
+    sprintf(s, "tabtitle %s %s\n", em->GetName(), cmd[1]);
     //printf(s);
     
     int fd;
@@ -27,15 +27,14 @@ void UzblTab::TitleChanged(char** cmd)
         close(fd);
     }
     
-    delete[] t;
+    //delete[] t;
 }
 
 void UzblTab::LoadStart(char** cmd)
 {
     char s[1024];
-    char* t = strjoin(" ", cmd+1);
-    sprintf(s, "taburi %s %s\n", em->GetName(), t);
-    //printf(s);
+    //char* t = strjoin(" ", cmd+1);
+    sprintf(s, "taburi %s %s\n", em->GetName(), cmd[1]);
     
     int fd;
     if (!access(fifotab, F_OK)) {
@@ -44,7 +43,6 @@ void UzblTab::LoadStart(char** cmd)
         close(fd);
     }
     
-    delete[] t;
 }
 
 void UzblTab::InstanceExit(char** cmd)
@@ -54,7 +52,6 @@ void UzblTab::InstanceExit(char** cmd)
     
     int fd;
     if (!access(fifotab, F_OK)) {
-        //printf("em: %s", s);
         fd = open(fifotab, O_WRONLY|O_NONBLOCK);
         write(fd, s, strlen(s));
         close(fd);
@@ -63,6 +60,7 @@ void UzblTab::InstanceExit(char** cmd)
 
 void UzblTab::SetFifoTab(char** cmd)
 {
+    printf("fifotab set: %s!\n", cmd[1]);
     strncpy(fifotab, cmd[1], 256);
 }
 

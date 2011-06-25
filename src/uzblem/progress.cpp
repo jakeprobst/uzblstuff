@@ -28,8 +28,9 @@ Progress::~Progress()
 
 void Progress::ProgressConfig(char** cmd)
 {
-    char* c = strjoin(" ", cmd+3);
+    //char* c = strjoin(" ", cmd+3);
     //printf("pconf: %s:%s\n", cmd[1], c);
+    char* c = cmd[3];
     
     if (!strcmp(cmd[1], "width"))
         width = atoi(c);
@@ -54,7 +55,7 @@ void Progress::ProgressConfig(char** cmd)
         spinner = strdup(c);
     }
     
-    delete[] c;
+    //delete[] c;
 }
 
 void Progress::ResetProgress()

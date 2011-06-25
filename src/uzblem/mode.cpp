@@ -57,21 +57,13 @@ void Mode::ConfigChange(char** cmd)
         }
         
     }
-    
-    /*char a[1024];
-    if (mode == MODE_COMMAND)
-        strcpy(a, "EVENT [1234] MODE_CHANGE command");
-    if (mode == MODE_INSERT)
-        strcpy(a, "EVENT [1234] MODE_CHANGE insert");
-    
-    em->Command(a);*/
-    
 }
 
 
 void Mode::SetConfig(char** cmd)
 {
     char* m = strjoin(" ", cmd+2);
+    //char* m = strdup(cmd[2]);
     if (!strcmp(cmd[1], "command"))
         command.push_back(m);
     else if (!strcmp(cmd[1], "insert"))
